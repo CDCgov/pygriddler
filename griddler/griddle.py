@@ -31,50 +31,51 @@ def parse(griddle):
 
     # start with the grid, and if there is no grid, consider the grid empty
     if "grid_parameters" in griddle:
-        param_sets = [
+        parameter_sets = [
             dict(zip(griddle["grid_parameters"].keys(), values))
             for values in itertools.product(*griddle["grid_parameters"].values())
         ]
     else:
-        param_sets = [{}]
+        parameter_sets = [{}]
 
-    # merge in nested values, if present
+    # find where nested values will get merged, if they are present
     if "nested_parameters" in griddle:
-        nest_idx = [
-            match_nest(nest, param_sets) for nest in griddle["nested_parameters"]
-        ]
-
-        if len(set(nest_idx)) < len(nest_idx):
-            raise RuntimeError("Multiple nests match the same grid set")
-
-        for i in nest_idx:
-            param_sets[i].update(griddle["nested_parameters"][i])
+        ps_nest_map = {
+            match_nest(nest, parameter_sets): nest
+            for nest in griddle["nested_parameters"]
+        }
+    else:
+        ps_nest_map = {}
 
     # merge in baseline values, if present
     if "baseline_parameters" in griddle:
-        param_sets = [ps | griddle["baseline_parameters"] for ps in param_sets]
+        parameter_sets = [ps | griddle["baseline_parameters"] for ps in parameter_sets]
 
-    return param_sets
+    # update the nested values, if nests were present
+    for ps_i, nest in ps_nest_map.items():
+        parameter_sets[ps_i] |= nest
+
+    return parameter_sets
 
 
-def match_nest(nest, param_sets):
+def match_nest(nest, parameter_sets):
     """Which parameter set does this nest match to?"""
-    matches = [_match_nest1(nest, ps) for ps in param_sets]
+    matches = [_match_nest1(nest, ps) for ps in parameter_sets]
     n_matches = matches.count(True)
     if n_matches == 0:
-        raise RuntimeError(f"Nest {nest} does not match any of {param_sets}")
-    elif n_matches > 1:
-        raise RuntimeError(f"Nest {nest} matches multiple of {param_sets}")
+        return None
+    if n_matches == 1:
+        return matches.index(True)
+    else:
+        raise RuntimeError(f"Nest {nest} matches multiple of {parameter_sets}")
 
-    return matches.index(True)
 
-
-def _match_nest1(nest, param_set):
+def _match_nest1(nest, parameter_set):
     """Does this nest match this parameter set?"""
-    common_keys = nest.keys() & param_set.keys()
+    common_keys = nest.keys() & parameter_set.keys()
     nest_subset = {key: nest[key] for key in common_keys}
-    param_subset = {key: param_set[key] for key in common_keys}
-    return nest_subset == param_subset
+    parameter_subset = {key: parameter_set[key] for key in common_keys}
+    return nest_subset == parameter_subset
 
 
 def read(path):
