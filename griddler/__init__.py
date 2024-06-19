@@ -1,6 +1,37 @@
 import random
 import polars as pl
-from typing import Callable
+from typing import Callable, Any
+
+class ParameterSet(dict):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.validate()
+
+    def hash(self):
+        return hash(self.to_tuple())
+
+    def to_tuple(self):
+        keys = sorted(self.keys())
+        values = [self[key] for key in keys]
+        return tuple((key, value) for key, value in zip(keys, values))
+
+    def validate(self):
+        for key in self.keys():
+            if not isinstance(key, str):
+                raise ValueError(f"parameter set key {key} is not a string")
+
+        for value in self.values():
+            self.validate_value(value)
+
+    @classmethod
+    def validate_value(cls, value):
+        if isinstance(value, (str, int, float)):
+            return True
+        elif isinstance(value, tuple):
+            for x in value:
+                cls.validate_value(x)
+        else:
+            raise ValueError(f"parameter value {value} is of invalid type {type(value)}")
 
 
 def run_squash(func: Callable[..., pl.DataFrame], parameter_sets):
