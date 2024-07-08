@@ -1,6 +1,7 @@
 import random
 import polars as pl
-from typing import Callable, Any
+from typing import Callable
+
 
 class ParameterSet(dict):
     def __init__(self, *args, **kwargs):
@@ -31,7 +32,9 @@ class ParameterSet(dict):
             for x in value:
                 cls.validate_value(x)
         else:
-            raise ValueError(f"parameter value {value} is of invalid type {type(value)}")
+            raise ValueError(
+                f"parameter value {value} is of invalid type {type(value)}"
+            )
 
 
 def run_squash(func: Callable[..., pl.DataFrame], parameter_sets):
