@@ -81,7 +81,6 @@ def _match_nest1(nest, parameter_set):
 def read(path):
     """Read a griddle file, and convert to parameter sets"""
     with open(path) as f:
-        raw = yaml.load(f)
+        raw = yaml.safe_load(f)
 
-    validate(raw)
     return parse(raw)
