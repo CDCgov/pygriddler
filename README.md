@@ -39,6 +39,9 @@ If `add_hash=True` (which is the default), then a column (with name equal to `ha
 
 ## Running a function with replicates
 
-# Problems
+Given
 
-- Random number generators and parallelization (e.g., [this blog](https://albertcthomas.github.io/good-practices-random-number-generators/))
+- a function, say `simulate()`, like in the example above, and
+- a list of parameter sets, as above, but with each parameter set having keys `"n_replicates"` and `"seed"`,
+
+then `replicated(simulate)` is itself a function, with the same signature as `simulate()`. It removes the `"n_replicates"` and `"seeds"` parameters from each parameter set, sets the seed with [`random.seed()`](https://docs.python.org/3/library/random.html#random.seed), and then runs `simulate()` on the remaining parameters `n_replicate` times. The results gets squashed with a column `"replicate"` (or whatever name you specify).
