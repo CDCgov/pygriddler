@@ -1,6 +1,38 @@
 import random
 import polars as pl
 from typing import Callable
+import hashlib
+import json
+
+
+class ParameterSet(dict):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.validate()
+
+    def stable_hash(self, digest_size=10):
+        data = json.dumps(self, sort_keys=True)
+        return hashlib.blake2b(data.encode(), digest_size=digest_size).hexdigest()
+
+    def validate(self):
+        for key in self.keys():
+            if not isinstance(key, str):
+                raise ValueError(f"parameter set key {key!r} is not a string")
+
+        for value in self.values():
+            self.validate_value(value)
+
+    @classmethod
+    def validate_value(cls, value):
+        if isinstance(value, (str, int, float)):
+            return True
+        elif isinstance(value, (list, tuple)):
+            for x in value:
+                cls.validate_value(x)
+        else:
+            raise ValueError(
+                f"parameter value {value!r} is of invalid type {type(value)}"
+            )
 
 
 def run_squash(func: Callable[..., pl.DataFrame], parameter_sets):
