@@ -2,7 +2,6 @@ name: mkdocs
 description: build mkdocs
 runs:
   steps:
-    - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
       with:
         python-version: 3.x
@@ -13,5 +12,5 @@ runs:
         path: .cache
         restore-keys: |
           mkdocs-material-
-    - run: pip install mkdocs-material mkdocstring
+    - run: pip install mkdocs-material mkdocstrings
     - run: mkdocs build
