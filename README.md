@@ -1,5 +1,19 @@
 # griddler
 
+## Getting started
+
+### Parsing griddles
+
+At the command line, `griddler parse < griddle.yaml > parameter_sets.yaml` will read a "griddle" yaml and output a list of lists yaml.
+
+In a script, the same could be accomplished with:
+```python
+parameter_sets = griddler.griddle.read("griddle.yaml")
+
+with open("parameter_sets.yaml", "w") as f:
+    yaml.dump(parameter_sets, f)
+```
+
 ## Parameter hashing
 
 A parameter set has a stable hash, implemented as a BLAKE2 digest of the JSON representation of the parameter set:
