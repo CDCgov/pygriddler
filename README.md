@@ -6,11 +6,12 @@ This package is an opinionated tool for managing inputs to simulations or other 
 
 ### Parameter sets
 
-A *parameter set* is a mapping of parameter names to parameter values. In `griddler`, the `ParameterSet` class is an extension of `dict` that provides some extra functionality.
+A _parameter set_ is a mapping of parameter names to parameter values. In `griddler`, the `ParameterSet` class is an extension of `dict` that provides some extra functionality.
 
 It ensures that all keys are strings and all values are valid. A value is valid if it is a float, integer, or string, or if it is a list or tuple composed of other valid values (e.g., a list of integers).
 
 A parameter set has a stable hash, implemented as a BLAKE2 digest of the JSON representation of the parameter set:
+
 ```python
 >>> ParameterSet({"gamma": 1.0, "beta": 2.0}).stable_hash()
 '2d220d93aff966ac7c50' # pragma: allowlist secret
@@ -18,7 +19,7 @@ A parameter set has a stable hash, implemented as a BLAKE2 digest of the JSON re
 
 ### Griddles
 
-A *griddle* is an intuitive file format for specifying lists of parameter sets. The syntax is inspired by the ["matrix" strategy](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix) in GitHub Workflow files.
+A _griddle_ is an intuitive file format for specifying lists of parameter sets. The syntax is inspired by the ["matrix" strategy](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix) in GitHub Workflow files.
 
 The griddle format assumes that parameters come in three flavors:
 
@@ -33,6 +34,7 @@ The griddle format is easy to read and write. A complete specification of the fo
 At the command line, `griddler parse < griddle.yaml > parameter_sets.yaml` will read a griddle and output a YAML file. This output file is a list of named lists. Each named list is a parameter set, one for each element of the grid.
 
 In a script, the same could be accomplished with:
+
 ```python
 parameter_sets = griddler.griddle.read("griddle.yaml")
 
@@ -80,8 +82,8 @@ then `replicated(simulate)` is itself a function, with the same signature as `si
   - Each element is a dictionary, called a "nest."
   - Every nest have at least one key that appears in the grid.
   - Key in each nest must be either:
-     1. present in `grid_parameters` or `baseline_parameters` (but not both), *or*
-     1. present in each nest.
+    1.  present in `grid_parameters` or `baseline_parameters` (but not both), _or_
+    1.  present in each nest.
 
 When parsed, the griddle expands into a list of dictionaries, each of which is a parameter set.
 
@@ -96,8 +98,7 @@ baseline_parameters:
   p_infected_initial: 0.001
 ```
 
-But maybe you want to run simulations over a grid of parameters. So instead use
-`grid_parameters`:
+But maybe you want to run simulations over a grid of parameters. So instead use `grid_parameters`:
 
 ```yaml
 baseline_parameters:
@@ -108,8 +109,7 @@ grid_parameters:
   infectious_period: [0.5, 2.0]
 ```
 
-This will run 4 parameter sets, over the Cartesian product of the parameter values
-for $R_0$ and $1/\gamma$.
+This will run 4 parameter sets, over the Cartesian product of the parameter values for $R_0$ and $1/\gamma$.
 
 If you want to run many replicates of each of those parameter sets, specify `seed` and `n_replicates`:
 
@@ -167,7 +167,7 @@ nested_parameters:
 
 This will produce 2 parameter sets.
 
-You cannot repeat a parameter name that is in `baseline_parameters` in `grid_parameters`, because it would be overwritten every time. But you can use `nested_parameters` to *sometimes* overwrite a baseline parameter value:
+You cannot repeat a parameter name that is in `baseline_parameters` in `grid_parameters`, because it would be overwritten every time. But you can use `nested_parameters` to _sometimes_ overwrite a baseline parameter value:
 
 ```yaml
 baseline_parameters:
@@ -207,70 +207,34 @@ Scott Olesen <ulp7@cdc.gov> (CDC/IOD/ORR/CFA)
 
 ## General Disclaimer
 
-This repository was created for use by CDC programs to collaborate on public
-health related projects in support of the
-[CDC mission](https://www.cdc.gov/about/organization/mission.htm). GitHub is not
-hosted by the CDC, but is a third party website used by CDC and its partners to
-share information and collaborate on software. CDC use of GitHub does not imply
-an endorsement of any one particular service, product, or enterprise.
+This repository was created for use by CDC programs to collaborate on public health related projects in support of the [CDC mission](https://www.cdc.gov/about/organization/mission.htm). GitHub is not hosted by the CDC, but is a third party website used by CDC and its partners to share information and collaborate on software. CDC use of GitHub does not imply an endorsement of any one particular service, product, or enterprise.
 
 ## Public Domain Standard Notice
 
-This repository constitutes a work of the United States Government and is not
-subject to domestic copyright protection under 17 USC § 105. This repository is
-in the public domain within the United States, and copyright and related rights
-in the work worldwide are waived through the
-[CC0 1.0 Universal public domain dedication](https://creativecommons.org/publicdomain/zero/1.0/).
-All contributions to this repository will be released under the CC0 dedication.
-By submitting a pull request you are agreeing to comply with this waiver of
-copyright interest.
+This repository constitutes a work of the United States Government and is not subject to domestic copyright protection under 17 USC § 105. This repository is in the public domain within the United States, and copyright and related rights in the work worldwide are waived through the [CC0 1.0 Universal public domain dedication](https://creativecommons.org/publicdomain/zero/1.0/). All contributions to this repository will be released under the CC0 dedication. By submitting a pull request you are agreeing to comply with this waiver of copyright interest.
 
 ## License Standard Notice
 
 This repository is licensed under ASL v2 or later.
 
-This source code in this repository is free: you can redistribute it and/or
-modify it under the terms of the Apache Software License version 2, or (at your
-option) any later version.
+This source code in this repository is free: you can redistribute it and/or modify it under the terms of the Apache Software License version 2, or (at your option) any later version.
 
-This source code in this repository is distributed in the hope that it will be
-useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the Apache Software
-License for more details.
+This source code in this repository is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the Apache Software License for more details.
 
-You should have received a copy of the Apache Software License along with this
-program. If not, see http://www.apache.org/licenses/LICENSE-2.0.html
+You should have received a copy of the Apache Software License along with this program. If not, see http://www.apache.org/licenses/LICENSE-2.0.html
 
 The source code forked from other open source projects will inherit its license.
 
 ## Privacy Standard Notice
 
-This repository contains only non-sensitive, publicly available data and
-information. All material and community participation is covered by the
-[Disclaimer](https://github.com/CDCgov/template/blob/master/DISCLAIMER.md) and
-[Code of Conduct](https://github.com/CDCgov/template/blob/master/code-of-conduct.md).
-For more information about CDC's privacy policy, please visit
-[http://www.cdc.gov/other/privacy.html](https://www.cdc.gov/other/privacy.html).
+This repository contains only non-sensitive, publicly available data and information. All material and community participation is covered by the [Disclaimer](https://github.com/CDCgov/template/blob/master/DISCLAIMER.md) and [Code of Conduct](https://github.com/CDCgov/template/blob/master/code-of-conduct.md). For more information about CDC's privacy policy, please visit [http://www.cdc.gov/other/privacy.html](https://www.cdc.gov/other/privacy.html).
 
 ## Contributing Standard Notice
 
-Anyone is encouraged to contribute to the repository by
-[forking](https://help.github.com/articles/fork-a-repo) and submitting a pull
-request. (If you are new to GitHub, you might start with a
-[basic tutorial](https://help.github.com/articles/set-up-git).) By contributing
-to this project, you grant a world-wide, royalty-free, perpetual, irrevocable,
-non-exclusive, transferable license to all users under the terms of the
-[Apache Software License v2](http://www.apache.org/licenses/LICENSE-2.0.html) or
-later.
+Anyone is encouraged to contribute to the repository by [forking](https://help.github.com/articles/fork-a-repo) and submitting a pull request. (If you are new to GitHub, you might start with a [basic tutorial](https://help.github.com/articles/set-up-git).) By contributing to this project, you grant a world-wide, royalty-free, perpetual, irrevocable, non-exclusive, transferable license to all users under the terms of the [Apache Software License v2](http://www.apache.org/licenses/LICENSE-2.0.html) or later.
 
-All comments, messages, pull requests, and other submissions received through
-CDC including this GitHub page may be subject to applicable federal law,
-including but not limited to the Federal Records Act, and may be archived. Learn
-more at
-[http://www.cdc.gov/other/privacy.html](http://www.cdc.gov/other/privacy.html).
+All comments, messages, pull requests, and other submissions received through CDC including this GitHub page may be subject to applicable federal law, including but not limited to the Federal Records Act, and may be archived. Learn more at [http://www.cdc.gov/other/privacy.html](http://www.cdc.gov/other/privacy.html).
 
 ## Records Management Standard Notice
 
-This repository is not a source of government records but is a copy to increase
-collaboration and collaborative potential. All government records will be
-published through the [CDC web site](http://www.cdc.gov).
+This repository is not a source of government records but is a copy to increase collaboration and collaborative potential. All government records will be published through the [CDC web site](http://www.cdc.gov).
