@@ -1,6 +1,7 @@
-name: mkdocs
+name: mkdocs_build
 description: build mkdocs
 runs:
+  using: composite
   steps:
     - uses: actions/setup-python@v5
       with:
