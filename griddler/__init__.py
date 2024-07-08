@@ -6,13 +6,30 @@ import json
 
 
 class ParameterSet(dict):
+    """A simple extension of the `dict` class, requiring that all keys be strings and that all
+    values be valid. Valid values are integers, floats, or strings, or lists or tuples composed
+    of valid values.
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.validate()
 
-    def stable_hash(self, digest_size=10):
+    def stable_hash(self, hash_length: int = 10) -> str:
+        """Create a stable hash of this parameter set.
+
+        Examples:
+            >>> ParameterSet({"gamma": 1.0, "R0": 0.9}).stable_hash()
+            '544601bc1dbb3346faff' # pragma: allowlist secret
+
+        Args:
+            hash_length: Number of characters in the hash
+
+        Returns:
+            hash
+        """
         data = json.dumps(self, sort_keys=True)
-        return hashlib.blake2b(data.encode(), digest_size=digest_size).hexdigest()
+        return hashlib.blake2b(data.encode(), digest_size=hash_length).hexdigest()
 
     def validate(self):
         for key in self.keys():
