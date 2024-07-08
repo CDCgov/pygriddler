@@ -6,9 +6,11 @@ import json
 
 
 class ParameterSet(dict):
-    """A simple extension of the `dict` class, requiring that all keys be strings and that all
-    values be valid. Valid values are integers, floats, or strings, or lists or tuples composed
-    of valid values.
+    """A simple extension of the `dict` class, requiring that:
+
+    1. all keys are strings, and
+    2. all values are valid. Valid values are integers, floats, or strings, or
+      lists (or tuples) composed of valid values.
     """
 
     def __init__(self, *args, **kwargs):
@@ -16,7 +18,8 @@ class ParameterSet(dict):
         self.validate()
 
     def stable_hash(self, hash_length: int = 10) -> str:
-        """Create a stable hash of this parameter set.
+        """Create a stable hash of this parameter set. Implemented as a BLAKE2
+        digest of the JSON representation of the parameter set:
 
         Examples:
             >>> ParameterSet({"gamma": 1.0, "R0": 0.9}).stable_hash()
