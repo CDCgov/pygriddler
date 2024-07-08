@@ -13,6 +13,10 @@ pytest = "^8.2.2"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.4"
+mkdocs = "^1.6.0"
+mkdocstrings = {extras = ["python"], version = "^0.25.1"}
+mkdocs-material = "^9.5.28"
+mkdocstrings-python = "^1.10.5"
 
 [build-system]
 requires = ["poetry-core"]
