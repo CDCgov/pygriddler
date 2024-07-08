@@ -2,8 +2,15 @@ import yaml
 import itertools
 
 
-def validate(griddle):
-    """Validate that a griddle is well-formed"""
+def validate(griddle: dict):
+    """Validate that a griddle is well-formed
+
+    Args:
+        griddle: dictionary
+
+    Raises:
+        AssertionError: if not valid
+    """
     # griddle is a dict
     assert isinstance(griddle, dict)
     # griddle has only the known keys
@@ -22,11 +29,16 @@ def validate(griddle):
         "nested_parameters" not in griddle.keys() or "grid_parameters" in griddle.keys()
     )
 
-    return True
 
+def parse(griddle: dict) -> list[dict]:
+    """Convert a griddle into a list of parameter sets.
 
-def parse(griddle):
-    """Convert a griddle into a list of parameter sets"""
+    Args:
+        griddle: griddle
+
+    Returns:
+        list of parameter sets
+    """
     validate(griddle)
 
     # start with the grid, and if there is no grid, consider the grid empty
@@ -41,7 +53,7 @@ def parse(griddle):
     # find where nested values will get merged, if they are present
     if "nested_parameters" in griddle:
         ps_nest_map = {
-            match_nest(nest, parameter_sets): nest
+            _match_nest(nest, parameter_sets): nest
             for nest in griddle["nested_parameters"]
         }
     else:
@@ -58,7 +70,7 @@ def parse(griddle):
     return parameter_sets
 
 
-def match_nest(nest, parameter_sets):
+def _match_nest(nest, parameter_sets):
     """Which parameter set does this nest match to?"""
     matches = [_match_nest1(nest, ps) for ps in parameter_sets]
     n_matches = matches.count(True)
@@ -78,8 +90,15 @@ def _match_nest1(nest, parameter_set):
     return nest_subset == parameter_subset
 
 
-def read(path):
-    """Read a griddle file, and convert to parameter sets"""
+def read(path: str) -> list[dict]:
+    """Read a griddle file, and convert to parameter sets.
+
+    Args:
+        path: path to griddle
+
+    Returns:
+        list of parameter sets
+    """
     with open(path) as f:
         raw = yaml.safe_load(f)
 

@@ -4,8 +4,14 @@ theme:
   name: "material"
 
 plugins:
-  - mkdocstrings
+- mkdocstrings:
+    handlers:
+      python:
+        options:
+          show_root_heading: true
+          show_full_root_path: true
+- search
 
 nav:
   - index.md
-  - reference.md
+  - API reference: reference.md
