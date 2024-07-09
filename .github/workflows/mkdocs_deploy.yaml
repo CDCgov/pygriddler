@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./github/actions/mkdocs_build
+      - uses: ./.github/actions/mkdocs_build
       - name: Configure Git Credentials
         run: |
           git config user.name github-actions[bot]
