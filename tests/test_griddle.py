@@ -1,4 +1,4 @@
-from griddler.griddle import parse, match_nest
+from griddler.griddle import parse, _match_nest
 import yaml
 
 
@@ -30,7 +30,7 @@ def test_grid_only():
 
 def test_match_nest():
     assert (
-        match_nest(
+        _match_nest(
             nest={"scenario": "optimistic", "R0": 0.5},
             parameter_sets=[{"scenario": "optimistic"}, {"scenario": "pessimistic"}],
         )
