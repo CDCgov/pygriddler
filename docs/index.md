@@ -1,8 +1,8 @@
 # griddler
 
-- Source: <https://github.com/cdcent/cfa-pygriddler>
-- Issues: <https://github.com/cdcent/cfa-pygriddler/issues>
-- Documentation: <https://fictional-broccoli-6k6445q.pages.github.io/>
+- Source: <https://github.com/CDCgov/pygriddler/>
+- Issues: <https://github.com/CDCgov/pygriddler/issues>
+- Documentation: <https://cdcgov.github.io/pygriddler/>
 
 ## Griddles
 
