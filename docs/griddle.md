@@ -17,7 +17,7 @@
   - Every nest have at least one key that appears in the grid.
   - Key in each nest must be either:
     1.  present in `grid_parameters` or `baseline_parameters` (but not both), _or_
-    1.  present in each nest.
+    2.  present in each nest.
 
 When parsed, the griddle expands into a list of dictionaries, each of which is a parameter set.
 
