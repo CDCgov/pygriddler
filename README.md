@@ -7,7 +7,7 @@ This package is an opinionated tool for managing inputs to simulations or other 
 - Running a function over multiple parameter sets, and "squashing" the results into a single [polars DataFrame](https://docs.pola.rs/py-polars/html/reference/dataframe/index.html).
 - Running a simulation function over multiple replicates with specified seeds.
 
-See the GitHub pages documentation for more detail.
+See the [GitHub pages documentation](https://cdcgov.github.io/pygriddler/) for more detail. Source documentation is under `docs/`.
 
 ## Project Admin
 
