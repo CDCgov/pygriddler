@@ -14,7 +14,7 @@ runs:
         path: .cache
         restore-keys: |
           mkdocs-material-
-    - run: pip install mkdocs-material mkdocstrings "mkdocstrings[python]"
+    - run: pip install mkdocs-material mkdocstrings "mkdocstrings[python]" mdx-truly-sane-lists
       shell: bash
     - run: mkdocs build
       shell: bash
