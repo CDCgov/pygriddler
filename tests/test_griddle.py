@@ -1,4 +1,4 @@
-from griddler.griddle import parse, _match_nest
+from griddler.griddle import parse, _match_ps_nest
 import yaml
 
 
@@ -29,13 +29,13 @@ def test_grid_only():
 
 
 def test_match_nest():
-    assert (
-        _match_nest(
-            nest={"scenario": "optimistic", "R0": 0.5},
-            parameter_sets=[{"scenario": "optimistic"}, {"scenario": "pessimistic"}],
-        )
-        == 0
-    )
+    assert _match_ps_nest(
+        parameter_set={"scenario": "optimistic"},
+        nests=[
+            {"scenario": "optimistic", "R0": 0.5},
+            {"scenario": "pessimistic", "R0": 1.5},
+        ],
+    ) == {"scenario": "optimistic", "R0": 0.5}
 
 
 def test_baseline_grid_nested():
@@ -58,4 +58,31 @@ def test_baseline_grid_nested():
         {"scenario": "baseline", "R0": 1.0},
         {"scenario": "optimistic", "R0": 0.5},
         {"scenario": "pessimistic", "R0": 2.0},
+    ]
+
+
+def test_multiple_grid_nested():
+    griddle = yaml.safe_load("""
+    baseline_parameters:
+      R0: 1.0
+
+    grid_parameters:
+      scenario: [baseline, optimistic, pessimistic]
+      gamma: [0.1, 0.2]
+
+    nested_parameters:
+      - scenario: optimistic
+        R0: 0.5
+      - scenario: pessimistic
+        R0: 2.0
+    """)
+
+    parameter_sets = parse(griddle)
+    assert parameter_sets == [
+        {"scenario": "baseline", "R0": 1.0, "gamma": 0.1},
+        {"scenario": "baseline", "R0": 1.0, "gamma": 0.2},
+        {"scenario": "optimistic", "R0": 0.5, "gamma": 0.1},
+        {"scenario": "optimistic", "R0": 0.5, "gamma": 0.2},
+        {"scenario": "pessimistic", "R0": 2.0, "gamma": 0.1},
+        {"scenario": "pessimistic", "R0": 2.0, "gamma": 0.2},
     ]
