@@ -1614,7 +1614,10 @@ files = [
     {file = "wcwidth-0.2.13.tar.gz", hash = "sha256:72ea0c06399eb286d978fdedb6923a9eb47e1c486ce63e9b4e64fc18303972b5"},
 ]
 
+[extras]
+polars = ["polars"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "13f976a4905395e3c53986969c980c8c0746482471cb391d50279fdecb8b30ff"
+content-hash = "bd4ff6d1c433eb82dd6be6645a47920b393e873d52939d9e07e5d93f8d0b2c82"
