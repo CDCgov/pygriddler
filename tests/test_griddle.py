@@ -59,3 +59,27 @@ def test_baseline_grid_nested():
         {"scenario": "optimistic", "R0": 0.5},
         {"scenario": "pessimistic", "R0": 2.0},
     ]
+
+
+def test_multiple_grid_nested():
+    griddle = yaml.safe_load("""
+    grid_parameters:
+      scenario: [baseline, optimistic, pessimistic]
+      gamma: [0.1, 0.2]
+
+    nested_parameters:
+      - scenario: optimistic
+        R0: 0.5
+      - scenario: pessimistic
+        R0: 2.0
+    """)
+
+    parameter_sets = parse(griddle)
+    assert parameter_sets == [
+        {"scenario": "baseline", "R0": 1.0, "gamma": 0.1},
+        {"scenario": "baseline", "R0": 1.0, "gamma": 0.2},
+        {"scenario": "optimistic", "R0": 0.5, "gamma": 0.1},
+        {"scenario": "optimistic", "R0": 0.5, "gamma": 0.2},
+        {"scenario": "pessimistic", "R0": 2.0, "gamma": 0.1},
+        {"scenario": "pessimistic", "R0": 2.0, "gamma": 0.2},
+    ]
