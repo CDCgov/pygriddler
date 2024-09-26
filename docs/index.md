@@ -18,6 +18,53 @@ The griddle format is easy to read and write. See ["The griddle format"](griddle
 
 See the [API reference](reference.md) for more details.
 
+## Overview
+
+```mermaid
+flowchart TD
+    subgraph Manual parameter input
+    user_scripts[User-edited scripts]
+    griddle
+    end
+
+    subgraph Immediate inputs
+    pss[Parameter sets]
+    data_files[Data files]
+    end
+    user_scripts --> pss
+    griddle -->|"read_griddle()"| pss
+
+    subgraph Job execution
+    run_cache["run_cache()"]
+    cloud_jobs[Cloud jobs]
+    end
+
+    pss --> run_cache
+    pss --> cloud_jobs
+    data_files --> run_cache
+    data_files --> cloud_jobs
+
+    subgraph Results storage
+    local_storage[Local storage]
+    cloud_storage[Cloud storage]
+    end
+
+    run_cache --> local_storage
+    local_storage --> cloud_storage
+    cloud_jobs --> cloud_storage
+
+    subgraph Post-processing
+    local_post[Local scripts]
+    cloud_post[Cloud jobs]
+    local_storage -->|"query_cache()"| local_post
+    cloud_storage --> cloud_post
+    end
+
+    Outputs
+    local_post --> Outputs
+    cloud_post --> Outputs
+```
+
 ## Parsing griddles
 
 At the command line, `griddler parse < griddle.yaml > parameter_sets.yaml` will read a griddle and output a YAML file. This output file is a list of named lists. Each named list is a parameter set, one for each element of the grid.
