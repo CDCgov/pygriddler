@@ -14,62 +14,40 @@ The griddle format assumes that parameters come in three flavors:
 - Grid: You want to perform a Cartesian product over lists of values for some parameters.
 - Nested: For certain combinations of "gridded" parameters, you want to specify additional parameters, potentially overwriting the baseline parameters.
 
-The griddle format is easy to read and write. See ["The griddle format"](griddle.md) for a complete specification of the format along with examples.
+The griddle format is easy for humans to read and write. See ["The griddle format"](griddle.md) for a complete specification of the format along with examples.
 
-See the [API reference](reference.md) for more details.
+## API overview
 
-## Overview
+The important functions in this package are [`griddler.griddle.read()`](reference.md#griddler.griddle.read), [`griddler.run_squash()`](reference.md#griddler.run_squash), and [`griddler.replicated()`](reference.md#griddler.replicated), each of which are described below in overview and in the [API reference](reference.md) in detail.
 
 ```mermaid
 flowchart TD
-    subgraph Manual parameter input
-    user_scripts[User-edited scripts]
-    griddle
-    end
+    griddle[/my_parameter_griddle.yaml/]
+    read_griddle["**griddle.read()**"]
+    pss[/list of ParameterSet objects/]
 
-    subgraph Immediate inputs
-    pss[Parameter sets]
-    data_files[Data files]
-    end
-    user_scripts --> pss
-    griddle -->|"read_griddle()"| pss
+    griddle --> read_griddle --> pss
 
-    subgraph Job execution
-    run_cache["run_cache()"]
-    cloud_jobs[Cloud jobs]
-    end
+    fun[/"my_simulation()"/]
+    ps[/ParameterSet/]
+    result1[/"one simulation's output (pl.DataFrame)"/]
+    fun --> result1
+    ps --> result1
 
-    pss --> run_cache
-    pss --> cloud_jobs
-    data_files --> run_cache
-    data_files --> cloud_jobs
+    run_squash["**run_squash()**"]
+    results[/"multiple simulations' outputs (pl.DataFrame)"/]
+    fun --> run_squash
+    pss --> run_squash
+    run_squash --> results
 
-    subgraph Results storage
-    local_storage[Local storage]
-    cloud_storage[Cloud storage]
-    end
-
-    run_cache --> local_storage
-    local_storage --> cloud_storage
-    cloud_jobs --> cloud_storage
-
-    subgraph Post-processing
-    local_post[Local scripts]
-    cloud_post[Cloud jobs]
-    local_storage -->|"query_cache()"| local_post
-    cloud_storage --> cloud_post
-    end
-
-    Outputs
-    local_post --> Outputs
-    cloud_post --> Outputs
+    replicated["**replicated()**"]
+    replicated_fun[/"my_replicated_simulation()"/]
+    fun --> replicated --> replicated_fun
 ```
 
 ## Parsing griddles
 
-At the command line, `griddler parse < griddle.yaml > parameter_sets.yaml` will read a griddle and output a YAML file. This output file is a list of named lists. Each named list is a parameter set, one for each element of the grid.
-
-In a script, the same could be accomplished with:
+The [`griddler.griddle.read()`](reference.md#griddler.griddle.read) function takes a YAML and returns a list of `ParameterSet` objects:
 
 ```python
 parameter_sets = griddler.griddle.read("griddle.yaml")
@@ -78,12 +56,20 @@ with open("parameter_sets.yaml", "w") as f:
     yaml.dump(parameter_sets, f)
 ```
 
+The package includes a console script so that you can use this functionality straight from the command line:
+
+```
+griddler parse < griddle.yaml > parameter_sets.yaml
+```
+
+will read a griddle YAML and output a YAML file. This output file is a list of named lists. Each named list is a parameter set, one for each element of the grid.
+
 ## Running a function and "squashing" results
 
 Given
 
-- a function, say `simulate()`, that takes a parameter set and returns a [polars DataFrame](https://docs.pola.rs/py-polars/html/reference/dataframe/index.html), and
-- a list of parameter sets, such as from [`griddler.griddle.read`][],
+1. a function, say `simulate()`, that takes a parameter set and returns a [polars DataFrame](https://docs.pola.rs/py-polars/html/reference/dataframe/index.html), and
+2. a list of parameter sets, such as from [`griddler.griddle.read()`](reference.md#griddler.griddle.read),
 
 then [`griddler.run_squash(simulate, parameter_sets)`](reference.md#griddler.run_squash) will return a "squashed" version of the results. This is a single DataFrame consisting of the other DataFrames, vertically concatenated.
 
