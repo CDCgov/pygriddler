@@ -1,5 +1,6 @@
-import yaml
 import itertools
+
+import yaml
 
 
 def validate(griddle: dict):

@@ -1,7 +1,9 @@
-from griddler import replicated
 import random
+
 import polars as pl
 import polars.testing
+
+from griddler import replicated
 
 
 def test_simple_replicated():

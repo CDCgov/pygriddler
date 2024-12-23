@@ -1,7 +1,9 @@
-import griddler.griddle
 import argparse
 import sys
+
 import yaml
+
+import griddler.griddle
 
 
 def run():
