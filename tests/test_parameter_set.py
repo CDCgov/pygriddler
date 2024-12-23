@@ -1,5 +1,6 @@
-from griddler import ParameterSet
 import pytest
+
+from griddler import ParameterSet
 
 
 def test_validate_keys():
@@ -8,10 +9,14 @@ def test_validate_keys():
         ParameterSet({1: 2})
 
 
-def test_validate_values_no_dict():
-    """Value can't be a dict"""
+def test_validate_values_dict():
+    """Value can be a dict, but sub-dicts must work"""
+    ParameterSet({"param": {"sub_param": "value"}})
+
+    ParameterSet({"param": {"sub_param": {"sub_sub_param": "value"}}})
+
     with pytest.raises(ValueError, match="invalid type"):
-        ParameterSet({"param": {"sub_param": "value"}})
+        ParameterSet({"param": {"sub_param": set()}})
 
 
 def test_validate_values_list_ok():

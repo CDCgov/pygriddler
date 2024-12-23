@@ -1,5 +1,6 @@
-from griddler.griddle import parse, _match_ps_nest
 import yaml
+
+from griddler.griddle import _match_ps_nest, parse
 
 
 def test_baseline_only():
@@ -86,3 +87,16 @@ def test_multiple_grid_nested():
         {"scenario": "pessimistic", "R0": 2.0, "gamma": 0.1},
         {"scenario": "pessimistic", "R0": 2.0, "gamma": 0.2},
     ]
+
+
+def test_nested_dicts():
+    griddle = yaml.safe_load("""
+    baseline_parameters:
+      random_numbers:
+        distribution: gamma
+        shape: 1.0
+        scale: 0.5
+    """)
+
+    parameter_sets = parse(griddle)
+    assert parameter_sets == [griddle["baseline_parameters"]]

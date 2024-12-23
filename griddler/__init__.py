@@ -1,8 +1,9 @@
-import random
-import polars as pl
-from typing import Callable, Sequence
 import hashlib
 import json
+import random
+from typing import Any, Callable, Optional, Sequence
+
+import polars as pl
 
 
 class ParameterSet(dict):
@@ -49,6 +50,10 @@ class ParameterSet(dict):
         elif isinstance(value, (list, tuple)):
             for x in value:
                 cls.validate_value(x)
+        elif isinstance(value, dict):
+            assert all(isinstance(k, str) for k in value.keys())
+            for x in value.values():
+                cls.validate_value(x)
         else:
             raise ValueError(
                 f"parameter value {value!r} is of invalid type {type(value)}"
@@ -59,13 +64,17 @@ def run_squash(
     func: Callable[..., pl.DataFrame],
     parameter_sets: Sequence[dict],
     add_parameters: bool = True,
-    parameter_columns: Sequence[str] = None,
+    parameter_columns: Optional[Sequence[str]] = None,
     add_hash: bool = True,
     hash_column: str = "hash",
 ):
     outputs = [func(ps) for ps in parameter_sets]
 
     output_vars = set([column for output in outputs for column in output.columns])
+
+    # the hash column name shouldn't collide with any output or parameter columns
+    if add_hash:
+        assert hash_column not in output_vars
 
     if add_parameters:
         # if parameter_vars is not specified, then include all parameters
@@ -78,18 +87,14 @@ def run_squash(
         # to add
         assert len(output_vars & set(parameter_columns)) == 0
 
-    # the hash column name shouldn't collide with any output or parameter columns
-    if add_hash:
-        assert hash_column not in output_vars
+        # there should be no collision with hash column
+        if add_hash:
+            assert hash_column not in parameter_columns
 
-    if add_parameters and add_hash:
-        assert hash_column not in parameter_columns
-
-    # add parameter columns
-    if add_parameters:
+        # add parameter columns
         outputs = [
             output.with_columns(
-                [pl.lit(ps[key]).alias(key) for key in parameter_columns]
+                [_as_expr(ps[key]).alias(key) for key in parameter_columns]
             )
             for output, ps in zip(outputs, parameter_sets)
         ]
@@ -103,6 +108,23 @@ def run_squash(
         ]
 
     return pl.concat(outputs, how="vertical")
+
+
+def _as_expr(x: Any) -> pl.Expr:
+    """Cast object as polars-compatible value
+
+    Args:
+        x: Input value
+
+    Returns:
+        pl.Expr: If `x` is a dict, a `pl.struct()`. Otherwise, a `pl.lit()`.
+    """
+    if isinstance(x, dict):
+        return pl.struct([_as_expr(value).alias(key) for key, value in x.items()])
+    elif isinstance(x, (str, int, float, list, tuple)):
+        return pl.lit(x)
+    else:
+        raise RuntimeError(f"Parameter value {x} of invalid type {type(x)}")
 
 
 def replicated(
