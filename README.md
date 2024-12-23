@@ -13,6 +13,10 @@ See the [GitHub pages documentation](https://cdcgov.github.io/pygriddler/) for m
 
 Scott Olesen <ulp7@cdc.gov> (CDC/IOD/ORR/CFA)
 
+## Changelog
+
+- v0.2.0: Add support for dictionary-of-dictionary parameters
+
 ---
 
 ## General Disclaimer

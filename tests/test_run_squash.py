@@ -1,5 +1,6 @@
 import polars as pl
 import polars.testing
+
 from griddler import run_squash
 
 
@@ -63,4 +64,14 @@ def test_run_squash_some_parameters():
 
     expected = pl.DataFrame({"x_plus_y": [2, 12], "x": [1, 10]})
 
+    polars.testing.assert_frame_equal(output, expected, check_dtypes=False)
+
+
+def test_run_squash_nested_dict():
+    def func(ps) -> pl.DataFrame:
+        return pl.DataFrame({"x_plus_y": ps["numbers"]["x"] + ps["numbers"]["y"]})
+
+    parameter_sets = [{"numbers": {"x": 1, "y": 2}}]
+    output = run_squash(func, parameter_sets, add_hash=False)
+    expected = pl.DataFrame({"x_plus_y": 3, "numbers": pl.struct(x=1, y=2, eager=True)})
     polars.testing.assert_frame_equal(output, expected, check_dtypes=False)
