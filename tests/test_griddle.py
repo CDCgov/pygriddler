@@ -1,6 +1,6 @@
 import yaml
 
-from griddler.griddle import _match_ps_nest, parse
+from griddler.griddle import _match_ps_nest, parse, read, read_to_json
 
 
 def test_baseline_only():
@@ -63,22 +63,8 @@ def test_baseline_grid_nested():
 
 
 def test_multiple_grid_nested():
-    griddle = yaml.safe_load("""
-    baseline_parameters:
-      R0: 1.0
+    parameter_sets = read("tests/fixtures/test_griddle_test_multiple_grid_nested.yaml")
 
-    grid_parameters:
-      scenario: [baseline, optimistic, pessimistic]
-      gamma: [0.1, 0.2]
-
-    nested_parameters:
-      - scenario: optimistic
-        R0: 0.5
-      - scenario: pessimistic
-        R0: 2.0
-    """)
-
-    parameter_sets = parse(griddle)
     assert parameter_sets == [
         {"scenario": "baseline", "R0": 1.0, "gamma": 0.1},
         {"scenario": "baseline", "R0": 1.0, "gamma": 0.2},
@@ -100,3 +86,12 @@ def test_nested_dicts():
 
     parameter_sets = parse(griddle)
     assert parameter_sets == [griddle["baseline_parameters"]]
+
+
+def test_read_to_json():
+    yaml_path = "tests/fixtures/test_griddle_test_multiple_grid_nested.yaml"
+
+    with open("tests/fixtures/test_griddle_test_multiple_grid_nested.json") as f:
+        json_text = f.read()
+
+    assert read_to_json(yaml_path) + "\n" == json_text

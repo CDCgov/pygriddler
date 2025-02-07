@@ -1,0 +1,10 @@
+baseline_parameters:
+  R0: 1.0
+grid_parameters:
+  scenario: [baseline, optimistic, pessimistic]
+  gamma: [0.1, 0.2]
+nested_parameters:
+  - scenario: optimistic
+    R0: 0.5
+  - scenario: pessimistic
+    R0: 2.0
