@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.10"
 pyyaml = "^6.0.1"
 polars = {version = "^1.7.1", optional = true}
+progressbar2 = "^4.5.0"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.4"

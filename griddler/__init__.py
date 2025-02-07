@@ -4,6 +4,7 @@ import random
 from typing import Any, Callable, Optional, Sequence
 
 import polars as pl
+import progressbar
 
 
 class ParameterSet(dict):
@@ -67,8 +68,13 @@ def run_squash(
     parameter_columns: Optional[Sequence[str]] = None,
     add_hash: bool = True,
     hash_column: str = "hash",
+    progress: bool = True,
 ):
-    outputs = [func(ps) for ps in parameter_sets]
+    # run all parameter sets, optionally wrapping in a progress bar
+    parameter_sets_run = (
+        progressbar.progressbar(parameter_sets) if progress else parameter_sets
+    )
+    outputs = [func(ps) for ps in parameter_sets_run]
 
     output_vars = set([column for output in outputs for column in output.columns])
 
