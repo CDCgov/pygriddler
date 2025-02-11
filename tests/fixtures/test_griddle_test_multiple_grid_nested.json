@@ -1,0 +1,32 @@
+[
+  {
+    "scenario": "baseline",
+    "gamma": 0.1,
+    "R0": 1.0
+  },
+  {
+    "scenario": "baseline",
+    "gamma": 0.2,
+    "R0": 1.0
+  },
+  {
+    "scenario": "optimistic",
+    "gamma": 0.1,
+    "R0": 0.5
+  },
+  {
+    "scenario": "optimistic",
+    "gamma": 0.2,
+    "R0": 0.5
+  },
+  {
+    "scenario": "pessimistic",
+    "gamma": 0.1,
+    "R0": 2.0
+  },
+  {
+    "scenario": "pessimistic",
+    "gamma": 0.2,
+    "R0": 2.0
+  }
+]

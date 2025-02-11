@@ -1,4 +1,5 @@
 import itertools
+import json
 
 import yaml
 
@@ -93,6 +94,21 @@ def _match_ps_nest1(parameter_set, nest):
     return all(nest[key] == parameter_set[key] for key in common_keys)
 
 
+def _read_yaml(path: str) -> dict:
+    """Read a yaml file and return the contents as a dictionary
+
+    Args:
+        path: path to yaml file
+
+    Returns:
+        dictionary
+    """
+    with open(path) as f:
+        raw = yaml.safe_load(f)
+
+    return raw
+
+
 def read(path: str) -> list[dict]:
     """Read a griddle file, and convert to parameter sets.
 
@@ -102,7 +118,16 @@ def read(path: str) -> list[dict]:
     Returns:
         list of parameter sets
     """
-    with open(path) as f:
-        raw = yaml.safe_load(f)
+    return parse(_read_yaml(path))
 
-    return parse(raw)
+
+def read_to_json(path: str) -> str:
+    """Read a griddle file, and convert to parameter sets.
+
+    Args:
+        path: path to griddle
+
+    Returns:
+        JSON version of the list of parameter sets
+    """
+    return json.dumps(read(path), indent=2)
