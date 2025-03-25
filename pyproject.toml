@@ -12,7 +12,6 @@ polars = {version = "^1.7.1", optional = true}
 progressbar2 = "^4.5.0"
 
 [tool.poetry.group.dev.dependencies]
-ipykernel = "^6.29.4"
 mkdocs = "^1.6.0"
 mkdocstrings = {extras = ["python"], version = "^0.25.1"}
 mkdocs-material = "^9.5.28"
