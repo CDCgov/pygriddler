@@ -24,18 +24,17 @@
                     "type": "string"
                 },
                 "type": {
-                    "type": "string",
-                    "enum": [
-                        "fix"
-                    ]
+                    "const": "fix"
                 },
-                "value": {}
+                "value": {},
+                "comment": {}
             },
-            "required": [
+            "requiredProperties": [
                 "name",
                 "type",
                 "value"
-            ]
+            ],
+            "additionalProperties": false
         },
         "fix_short": {
             "description": "fixed variable in short form",

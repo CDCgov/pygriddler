@@ -18,7 +18,7 @@ In typical practice, griddles are read in from YAML or JSON files, and the resul
 
 ### Fixed parameter
 
-A fixed parameter is a parameter that has the same value in all parameter sets (unless it is conditioned). The canonical, verbose syntax is:
+A fixed parameter is a parameter that has the same value in all parameter sets (unless it is conditioned). The canonical form is:
 
 ```yaml
 - name: parameter_name
@@ -26,13 +26,11 @@ A fixed parameter is a parameter that has the same value in all parameter sets (
   value: parameter_value
 ```
 
-Griddler supports the syntactic sugar:
+Griddler supports a short form, so long as parameter name is not a reserved word (`name`, `type`, `value`, `values`, `if`, `comment`):
 
 ```yaml
 - parameter_name: parameter_value
 ```
-
-so long as parameter name is not a reserved word (`name`, `type`, `value`, `values`, `if`, `comment`).
 
 Note that the value of a fixed parameter need not be a scalar. In this example `delay_distribution_pmf` will appear as the same list of values in all the parameter sets:
 
@@ -44,7 +42,7 @@ Note that the value of a fixed parameter need not be a scalar. In this example `
 
 A grid dimension is one or more parameters that take on different values in different parameter sets. All combinations of all grid dimensions are present in the output parameter sets (unless the dimension is conditioned).
 
-The canonical, verbose syntax is:
+The canonical form is:
 
 ```yaml
 - type: vary
@@ -57,7 +55,7 @@ The canonical, verbose syntax is:
 
 In the parameter sets, `param1_value1`, `param2_value1`, etc. will always appear together, and `param1_value2`, `param2_value2`, etc. will always appear together.
 
-There is a syntactic sugar, which assumes that the parameter names are not one of the reserved words:
+Griddler support a short form, which assumes that the parameter names are not one of the reserved words:
 
 ```yaml
 - type: vary
@@ -66,7 +64,7 @@ There is a syntactic sugar, which assumes that the parameter names are not one o
     parameter_name2: [param2_value1, param2_value2]
 ```
 
-For a grid dimension that has only one parameter, whose name is not a reserved word, there is an additional form of syntactic sugar:
+For a grid dimension that has only one parameter, whose name is not a reserved word, griddler supports an additional short form:
 
 ```yaml
 - parameter_name: {vary: [value1, value2]}
@@ -77,19 +75,27 @@ For a grid dimension that has only one parameter, whose name is not a reserved w
 A conditioned parameter will only be present in an parameter set when some one or more other parameters are present and have some particular values.
 
 ```yaml
-# conditioned fixed parameter
+# conditioned fixed parameter, canonical form
 - name: conditioned_parameter_name
   if: {parameter_name1: parameter_value1, parameter_name2: parameter_value2}
   type: fix
   value: conditioned_parameter_value
-# conditioned varying parameter
+
+# (there is no short form for conditioned fixed parameter)
+
+# conditioned varying parameter, canonical form
+- type: vary
+  if: {parameter_name1: parameter_value1, parameter_name2: parameter_value2}
+  values:
+    - name: varying_parameter_name1
+      values: [v_param_value1, v_param_value2]
+
+# conditioned varying parameter, short form
 - type: vary
   if: {parameter_name1: parameter_value1, parameter_name2: parameter_value2}
   values:
     varying_parameter_name1: [v_param_value1, v_param_value2]
 ```
-
-There is no syntactic sugar for conditioned parameters.
 
 ### Comments
 
