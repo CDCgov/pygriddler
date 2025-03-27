@@ -1,25 +1,32 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "http://yourdomain.com/schemas/myschema.json",
-    "title": "griddle v0.3",
-    "description": "grid of parameters",
-    "type": "array",
-    "items": {
-        "type": "object",
-        "oneOf": [
-            {
-                "$ref": "#/$defs/fix_canonical"
-            },
-            {
-                "$ref": "#/$defs/fix_short"
-            },
-            {
-                "$ref": "#/$defs/vary"
-            },
-            {
-                "$ref": "#/$defs/vary_short_one"
+    "$id": "https://github.com/CDCgov/pygriddler/schema/griddle.json",
+    "title": "griddle",
+    "type": "object",
+    "properties": {
+        "version": {
+            "type": "string"
+        },
+        "dimensions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "oneOf": [
+                    {
+                        "$ref": "#/$defs/fix_canonical"
+                    },
+                    {
+                        "$ref": "#/$defs/fix_short"
+                    },
+                    {
+                        "$ref": "#/$defs/vary"
+                    },
+                    {
+                        "$ref": "#/$defs/vary_short_one"
+                    }
+                ]
             }
-        ]
+        }
     },
     "$defs": {
         "fix_canonical": {

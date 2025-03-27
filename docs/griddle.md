@@ -8,23 +8,40 @@ This doc describes the latest specification. Previous specifications:
 
 ## Specification
 
-Griddler is a tool for parsing *griddles* to produce a list of *parameter sets*.
-
-A griddle is a Python list. Each element is a dictionary representing a *fixed parameter* or a *grid dimension*. Fixed parameters and grid dimensions can be *conditioned*.
-
-A parameter set is a dictionary who keys are parameter names, of string type, and whose values are the values of the corresponding parameters.
+Griddler is a tool for parsing *griddles* to produce a list of *parameter sets*. A parameter set is a dictionary who keys are parameter names, of string type, and whose values are the values of the corresponding parameters.
 
 In typical practice, griddles are read in from YAML or JSON files, and the resulting parameter sets are serialized as JSON files. That convention is used in the specifications and examples here.
+
+A griddle is a Python dictionary. At the top level, there is one metadata key, `version` that must be specified. The current version is `"v0.3"`.
+
+The other key, `parameters`, has a value that is a list. Each element in the list is a dictionary represents:
+
+1. a *fixed* parameter that appears in every parameter set with the same value (so long as it is not *conditioned*),
+2. a single *varying* parameter that takes on different values in different parameters sets, and
+3. a bundle of parameters that vary together.
+
+### Minimal griddle
+
+The minimal functional griddle has a version and no parameters.
+
+```yaml
+version: v0.3
+parameters: {}
+```
 
 ### Fixed parameter
 
 A fixed parameter is a parameter that has the same value in all parameter sets (unless it is conditioned). The canonical form is:
 
 ```yaml
-- name: parameter_name
-  type: fix
-  value: parameter_value
+version: v0.3
+parameters:
+  - name: parameter_name
+    type: fix
+    value: parameter_value
 ```
+
+In future examples, for brevity, only the list elements within `parameters` are shown.
 
 Griddler supports a short form, so long as parameter name is not a reserved word (`name`, `type`, `vary`, `value`, `values`, `if`, `comment`):
 
