@@ -38,7 +38,7 @@
                 },
                 "comment": {}
             },
-            "requiredProperties": [
+            "required": [
                 "name",
                 "type",
                 "value"
@@ -81,7 +81,7 @@
                 },
                 "comment": {}
             },
-            "requiredProperties": [
+            "required": [
                 "type",
                 "values"
             ],
@@ -101,7 +101,7 @@
                             "type": "array"
                         }
                     },
-                    "requiredProperties": [
+                    "required": [
                         "vary"
                     ],
                     "additionalProperties": false
