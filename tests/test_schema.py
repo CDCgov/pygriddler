@@ -1,19 +1,25 @@
-import json
-
 import jsonschema
 import jsonschema.exceptions
 import pytest
 
-with open("griddler/schema.json") as f:
-    schema = json.load(f)
+import griddler.griddle
+
+schema = griddler.griddle.load_schema()
 
 
-def validate_griddle(x):
+def validate_griddle(x: dict) -> None:
+    """Validate an entire griddle"""
     jsonschema.Draft202012Validator(schema).validate(x)
 
 
-def validate_parameters(x):
+def validate_parameters(x: dict) -> None:
+    """Validate the parameters dictionary inside a griddle"""
     validate_griddle({"version": "my_version", "parameters": x})
+
+
+def test_v0_2_griddle_fails():
+    with pytest.raises(jsonschema.exceptions.ValidationError):
+        validate_griddle({"baseline_parameters": {"R0": 1.5, "gamma": 2.0}})
 
 
 def test_griddle_minimal():

@@ -63,7 +63,11 @@
                     }
                 ]
             }
-        },
-        "additionalProperties": false
-    }
+        }
+    },
+    "required": [
+        "version",
+        "parameters"
+    ],
+    "additionalProperties": false
 }
