@@ -49,7 +49,10 @@
             "description": "fixed variable in short form",
             "type": "object",
             "minProperties": 1,
-            "maxProperties": 1
+            "maxProperties": 1,
+            "propertyNames": {
+                "$ref": "#/$defs/not_a_reserved_word"
+            }
         },
         "vary": {
             "description": "grid dimension (all except one parameter in short form)",
@@ -103,6 +106,19 @@
                     ],
                     "additionalProperties": false
                 }
+            }
+        },
+        "not_a_reserved_word": {
+            "not": {
+                "enum": [
+                    "name",
+                    "type",
+                    "vary",
+                    "value",
+                    "values",
+                    "if",
+                    "comment"
+                ]
             }
         }
     }

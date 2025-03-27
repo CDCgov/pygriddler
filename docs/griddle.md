@@ -26,7 +26,7 @@ A fixed parameter is a parameter that has the same value in all parameter sets (
   value: parameter_value
 ```
 
-Griddler supports a short form, so long as parameter name is not a reserved word (`name`, `type`, `value`, `values`, `if`, `comment`):
+Griddler supports a short form, so long as parameter name is not a reserved word (`name`, `type`, `vary`, `value`, `values`, `if`, `comment`):
 
 ```yaml
 - parameter_name: parameter_value
