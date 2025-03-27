@@ -1,123 +1,122 @@
-# The griddle format
+# The griddle schema
 
-## Versioning
+Griddler is a tool for parsing a *griddle* to produce an array of *parameter sets*.
 
-This doc describes the latest specification. Previous specifications:
+A *parameter* consists of a string *name* and a *value* of arbitrary type. A *parameter set* is an object whose keywords are the parameter names and whose values are the corresponding parameter values.
 
-- [v0.2](griddle_0_2.md)
+!!! note
 
-## Specification
+    This document uses JSON typing nomenclature. A JSON array is like a Python list. A JSON object is a Python dictionary. An object keyword is like a dictionary key.
 
-Griddler is a tool for parsing *griddles* to produce a list of *parameter sets*.
 
-A griddle is a Python list. Each element is a dictionary representing a *fixed parameter* or a *grid dimension*. Fixed parameters and grid dimensions can be *conditioned*.
+A *griddle* is an object with two keywords: `version` and `parameters`. `version` specifies the version of the griddler schema, currently `"v0.3"`. `parameters` is an object whose keywords are usually parameter names and whose values are parameter *specifications*. Each specification specifies one of:
 
-A parameter set is a dictionary who keys are parameter names, of string type, and whose values are the values of the corresponding parameters.
+1. a *fixed* parameter that appears in every parameter set (so long as it is not *conditioned*) with the same value,
+2. a *varying bundle* of parameters that takes on different values in different parameters sets.
 
-In typical practice, griddles are read in from YAML or JSON files, and the resulting parameter sets are serialized as JSON files. That convention is used in the specifications and examples here.
+In typical practice, griddles are read in from YAML or JSON files, and parameter sets are serialized as JSON files. That convention is used in the examples here.
 
-### Fixed parameter
+## Minimal griddle
 
-A fixed parameter is a parameter that has the same value in all parameter sets (unless it is conditioned). The canonical, verbose syntax is:
-
-```yaml
-- name: parameter_name
-  type: fix
-  value: parameter_value
-```
-
-Griddler supports the syntactic sugar:
+The minimal functional griddle has a version and no parameters.
 
 ```yaml
-- parameter_name: parameter_value
+version: v0.3
+parameters: {}
 ```
 
-so long as parameter name is not a reserved word (`name`, `type`, `value`, `values`, `if`, `comment`).
-
-Note that the value of a fixed parameter need not be a scalar. In this example `delay_distribution_pmf` will appear as the same list of values in all the parameter sets:
+## Fixed parameters
 
 ```yaml
-- delay_distribution_pmf: [0.0, 0.1, 0.2, 0.3, 0.2, 0.1, 0.0]
+version: v0.3
+parameters:
+  NAME:
+    fix: VALUE
+  # note that this could be written in YAML as:
+  # NAME: {fix: VALUE}
 ```
 
-### Grid dimension
+In this and future examples, capitals are used to designate values that would be filled in. In future examples, `version` is omitted for brevity.
 
-A grid dimension is one or more parameters that take on different values in different parameter sets. All combinations of all grid dimensions are present in the output parameter sets (unless the dimension is conditioned).
-
-The canonical, verbose syntax is:
+Note that the value of a fixed parameter need not be a scalar. For example, `delay_distribution_pmf` would appear as the same array in all the parameter sets:
 
 ```yaml
-- type: vary
-  values:
-  - name: parameter_name1
-    values: [param1_value1, param1_value2]
-  - name: parameter_name2
-    values: [param2_value1, param2_value2]
+parameters:
+  delay_distribution_pmf: {fix: [0.0, 0.1, 0.2, 0.3, 0.2, 0.1, 0.0]}
 ```
 
-In the parameter sets, `param1_value1`, `param2_value1`, etc. will always appear together, and `param1_value2`, `param2_value2`, etc. will always appear together.
+## Varying bundles of parameters
 
-There is a syntactic sugar, which assumes that the parameter names are not one of the reserved words:
+The canonical form is:
 
 ```yaml
-- type: vary
-  values:
-    parameter_name1: [param1_value1, param1_value2]
-    parameter_name2: [param2_value1, param2_value2]
+parameters:
+  NAME:
+    vary:
+      NAME1: [NAME1_VALUE1, NAME1_VALUE2] # and so on for NAME1_VALUE3, etc.
+      NAME2: [NAME2_VALUE1, NAME2_VALUE2]
+      # and so on for NAME3, etc.
 ```
 
-For a grid dimension that has only one parameter, whose name is not a reserved word, there is an additional form of syntactic sugar:
+The parameters `NAME1` and `NAME2` are in a *bundle* because they will vary together across parameter sets. In the parameter sets, `NAME1` will take on the `NAME1_VALUE*` values, `NAME2` will take on the `NAME2_VALUE*` values, and so forth. The `*_VALUE1` values will always appear together, the `*_VALUE2` will always appear together, and so forth, so the values lists must all be of equal length. The top-level `NAME`, a unique identifier for the bundle of parameters `NAME1`, `NAME2`, etc. does not appear in the parameter sets.
+
+## Single varying parameters
+
+If there is only one parameter in a bundle, griddler support a short form:
 
 ```yaml
-- parameter_name: {vary: [value1, value2]}
+parameters:
+  NAME:
+    vary: [VALUE1, VALUE2]
+  # note that this could be written in YAML as:
+  # NAME: {vary: [VALUE1, VALUE2]}
 ```
+
+The top-level `NAME` is used as the parameter name.
 
 ### Conditioned parameters
 
-A conditioned parameter will only be present in an parameter set when some one or more other parameters are present and have some particular values.
+A conditioned parameter will only be present in a parameter set when some one or more other parameters are present and have some particular values.
 
 ```yaml
-# conditioned fixed parameter
-- name: conditioned_parameter_name
-  if: {parameter_name1: parameter_value1, parameter_name2: parameter_value2}
-  type: fix
-  value: conditioned_parameter_value
-# conditioned varying parameter
-- type: vary
-  if: {parameter_name1: parameter_value1, parameter_name2: parameter_value2}
-  values:
-    varying_parameter_name1: [v_param_value1, v_param_value2]
+parameters:
+  FIXED_NAME:
+    if: {COND_NAME1: COND_VALUE1, COND_NAME2: COND_VALUE2}
+    fix: VALUE
+
+  VARYING_BUNDLE_NAME:
+    if: {COND_NAME1: COND_VALUE1, COND_NAME2: COND_VALUE2}
+    vary:
+      VARYING_PARAM_NAME: [VALUE1, VALUE2]
+
+  VARYING_PARAM_NAME:
+    if: {COND_NAME1: COND_VALUE1, COND_NAME2: COND_VALUE2}
+    vary: [VALUE1, VALUE2]
 ```
 
-There is no syntactic sugar for conditioned parameters.
+## Comments
 
-### Comments
-
-Any content in these fields are ignored. This is not important in YAML files, which support comments, but can be useful in a human-written JSON.
+Any content in a `comment` field is ignored. This is not important in YAML files, which have native comments, but can be useful in a human-written JSON. Comments are only available in canonical forms.
 
 ```yaml
-- name: fixed_parameter_name
-  type: fix
-  value: fixed_parameter_value
-  comment: Whatever is here is ignored
-- type: vary
-  comment: Whatever is here is ignored
-  values:
-    varying_parameter: [varying_value1, varying_value2]
+parameters:
+  FIXED_NAME:
+    comment: THIS TEXT IS IGNORED
+    fix: VALUE
+  VARYING_PARAM_NAME:
+    comment: THIS TEXT IS IGNORED
+    vary: [VARY_VALUE1, VARY_VALUE2]
 ```
-
-### Version
-
-TBD: A way to specify which version/schema the file is from.
 
 ## Examples
 
 ### Only fixed parameters
 
 ```yaml
-- R0: 3.0
-- infectious_period: 1.0
-- p_infected_initial: 0.001
+parameters:
+  R0: {fix: 3.0}
+  infectious_period: {fix: 1.0}
+  p_infected_initial: {fix: 0.001}
 ```
 
 This produces only a single parameter set:
@@ -128,15 +127,16 @@ This produces only a single parameter set:
 ]
 ```
 
-### A 2-dimensional grid with 1 fixed parameter
+### 2 varying parameters and 1 fixed
 
 ```yaml
-- R0: {vary: [2.0, 3.0]}
-- infectious_period: {vary: [0.5, 2.0]}
-- p_infected_initial: 0.001
+parameters:
+  - R0: {vary: [2.0, 3.0]}
+  - infectious_period: {vary: [0.5, 2.0]}
+  - p_infected_initial: {fix: 0.001}
 ```
 
-A 2-dimensional grid, with 2 values per dimension, produces 4 parameter sets:
+This produces 4 parameter sets:
 
 ```json
 [
@@ -154,23 +154,25 @@ Note that the ordering of the outputs is not guaranteed.
 If you want to run many replicates of each of those parameter sets, specify `seed` and `n_replicates`:
 
 ```yaml
-- seed: 42
-- n_replicates: 100
-- p_infected_initial: 0.001
-- R0: {vary: [2.0, 3.0]}
-- infectious_period: {vary: [0.5, 2.0]}
+parameters:
+  seed: {fix: 42}
+  n_replicates: {fix: 100}
+  p_infected_initial: {fix: 0.001}
+  R0: {vary: [2.0, 3.0]}
+  infectious_period: {vary: [0.5, 2.0]}
 ```
 
 This will still produce 4 parameter sets. It will be up to your wrapped simulation function to know how to run all the replicates. The `replicated()` function in this package is designed for that.
 
-### 2-dimensional grid with multiple parameters in a dimension
+### Varying parameter bundles
 
 ```yaml
-- type: vary
-  values:
-    R0: [2.0, 4.0]
-    p_infected_initial: [0.01, 0.0001]
-- infectious_period: {vary: [0.5, 2.0]}
+parameters:
+  scenario:
+    vary:
+      R0: [2.0, 4.0],
+      p_infected_initial: [0.01, 0.0001]
+  infectious_period: {vary: [0.5, 2.0]}
 ```
 
 $R_0$ and $p_{I0}$ vary together, and the infectious period $1/\gamma$ varies separately, producing 4 parameter sets:
@@ -185,14 +187,14 @@ $R_0$ and $p_{I0}$ vary together, and the infectious period $1/\gamma$ varies se
 Vary over two states, matching with their capitals, and then also vary over beach towns in the coastal state:
 
 ```yaml
-- type: vary
-  values:
-    state: [Virginia, North Dakota]
-    capital: [Richmond, Pierre]
-- type: vary
-  if: {state: Virginia}
-  values:
-    beach_town: [Virginia Beach, Chincoteague, Colonial Beach]
+parameters:
+  state_and_capital:
+    vary:
+      state: [Virginia, North Dakota]
+      capital: [Richmond, Pierre]
+  beach_town:
+    if: {state: Virginia}
+    vary: [Virginia Beach, Chincoteague, Colonial Beach]
 ```
 
 This produces 4 parameter sets. Note that `"beach_town"` is only present when `"state"` is `"Virginia"`:

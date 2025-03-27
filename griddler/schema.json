@@ -1,0 +1,69 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://github.com/CDCgov/pygriddler/schema/griddle.json",
+    "title": "griddle",
+    "type": "object",
+    "properties": {
+        "version": {
+            "type": "string"
+        },
+        "parameters": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "oneOf": [
+                    {
+                        "description": "fixed parameter",
+                        "properties": {
+                            "fix": {},
+                            "if": {
+                                "type": "object"
+                            },
+                            "comment": {}
+                        },
+                        "required": [
+                            "fix"
+                        ],
+                        "additionalProperties": false
+                    },
+                    {
+                        "description": "varying bundle of parameters",
+                        "properties": {
+                            "vary": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "array"
+                                }
+                            },
+                            "if": {
+                                "type": "object"
+                            },
+                            "comment": {}
+                        },
+                        "required": [
+                            "vary"
+                        ],
+                        "additionalProperties": false
+                    },
+                    {
+                        "description": "varying bundle, with one parameter, in short form",
+                        "properties": {
+                            "vary": {
+                                "type": "array"
+                            },
+                            "if": {
+                                "type": "object"
+                            },
+                            "comment": {}
+                        },
+                        "required": [
+                            "vary"
+                        ],
+                        "additionalProperties": false
+                    }
+                ]
+            }
+        },
+        "additionalProperties": false
+    }
+}
