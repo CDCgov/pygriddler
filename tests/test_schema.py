@@ -12,135 +12,95 @@ def validate_griddle(x):
     jsonschema.Draft202012Validator(schema).validate(x)
 
 
-def validate_dimensions(x):
-    validate_griddle({"version": "my_version", "dimensions": x})
+def validate_parameters(x):
+    validate_griddle({"version": "my_version", "parameters": x})
 
 
 def test_griddle_minimal():
     """Minimal griddle"""
-    validate_griddle({"version": "my_version", "dimensions": []})
+    validate_griddle({"version": "my_version", "parameters": {}})
 
 
 def test_griddle_one():
     """Griddle with one dimension"""
-    validate_griddle({"version": "my_version", "dimensions": [{"R0": 1.5}]})
+    validate_griddle({"version": "my_version", "parameters": {"R0": {"fix": 1.5}}})
 
 
-def test_fix_canonical():
+def test_fix_scalar():
     """Fixed parameter with canonical form"""
-    validate_dimensions([{"name": "R0", "type": "fix", "value": 1.0}])
+    validate_parameters({"R0": {"fix": 1.0}})
 
 
-def test_fix_canonical_multiple():
-    """Multiple fixed parameters with canonical form"""
-    validate_dimensions(
-        [
-            {"name": "R0", "type": "fix", "value": 1.0},
-            {"name": "gamma", "type": "fix", "value": 2.0},
-        ]
+def test_fix_array():
+    """Fixed parameter with array form"""
+    validate_parameters({"R0": {"fix": [1.0, 2.0]}})
+
+
+def test_fix_multiple():
+    """Multiple fixed parameters"""
+    validate_parameters(
+        {"R0": {"fix": 1.0}, "gamma": {"fix": 2.0}, "beta": {"fix": 3.0}}
     )
 
 
-def test_fix_short_one():
-    """Fixed parameter with short form"""
-    validate_dimensions([{"R0": 1.0}])
-
-
-def test_fix_short_fail_multiple_properties():
-    """Malformed fixed parameter with short form"""
+def test_fixed_fail_on_bad_field():
+    """Fixed parameter with bad field"""
     with pytest.raises(jsonschema.exceptions.ValidationError):
-        validate_dimensions([{"R0": 1.0, "gamma": 2.0}])
+        validate_parameters({"R0": {"fix": 1.0, "bad_field": True}})
 
 
-def test_fix_short_fail_reserved_word():
-    """Fixed parameter with short form, but with a keyword name"""
-    for x in ["name", "type", "vary", "value", "values", "if", "comment"]:
-        try:
-            validate_dimensions([{x: 1.0}])
-            raise RuntimeError(f"Should have failed with key '{x}'")
-        except jsonschema.exceptions.ValidationError:
-            pass
+def test_vary_one():
+    """Varying bundle with one parameter"""
+    validate_parameters({"R0_bundle": {"vary": {"R0": [1.0, 2.0]}}})
 
 
-def test_vary_canonical_one():
-    """Grid dimension with one parameter in canonical form"""
-    validate_dimensions(
-        [{"type": "vary", "values": [{"name": "R0", "values": [1.0, 2.0]}]}]
+def test_vary_fail_on_bad_field():
+    """Varying bundle with one parameter with bad field"""
+    with pytest.raises(jsonschema.exceptions.ValidationError):
+        validate_parameters(
+            {"R0_bundle": {"vary": {"R0": [1.0, 2.0]}, "bad_field": True}}
+        )
+
+
+def test_vary_multiple():
+    """Varying bundle with multiple parameters"""
+    validate_parameters(
+        {"my_bundle": {"vary": {"R0": [1.0, 2.0], "gamma": [2.0, 3.0]}}}
     )
 
 
-def test_vary_canonical_multiple():
-    """Grid dimension with multiple parameters in canonical form"""
-    validate_dimensions(
-        [
-            {
-                "type": "vary",
-                "values": [
-                    {"name": "R0", "values": [1.0, 2.0]},
-                    {"name": "gamma", "values": [2.0, 3.0]},
-                ],
-            }
-        ]
-    )
-
-
-def test_vary_short_one():
-    """Grid dimension with one parameter in short form"""
-    validate_dimensions([{"R0": {"vary": [1.0, 2.0]}}])
-
-
-def test_vary_short_multiple():
-    """Grid dimension with multiple parameters in short form"""
-    validate_dimensions(
-        [{"type": "vary", "values": {"R0": [1.0, 2.0], "gamma": [2.0, 3.0]}}]
-    )
+def test_vary_one_short():
+    """Varying bundle with one parameter, in short form"""
+    validate_parameters({"R0": {"vary": [1.0, 2.0]}})
 
 
 def test_conditioned_fixed():
-    """Conditioned fixed parameter in canonical form"""
-    validate_dimensions(
-        [{"name": "R0", "type": "fix", "value": 1.0, "if": {"gamma": 2.0}}]
-    )
+    """Conditioned fixed parameter"""
+    validate_parameters({"R0": {"fix": 1.0, "if": {"gamma": 2.0}}})
 
 
 def test_conditioned_fixed_multiple_conditions():
-    """Conditioned fixed parameter in canonical form with multiple conditions"""
-    validate_dimensions(
-        [
-            {
-                "name": "R0",
-                "type": "fix",
-                "value": 1.0,
-                "if": {"gamma": 2.0, "beta": 3.0},
-            }
-        ]
-    )
+    """Conditioned fixed parameter with multiple conditions"""
+    validate_parameters({"R0": {"fix": 1.0, "if": {"gamma": 2.0, "beta": 3.0}}})
 
 
-def test_conditioned_vary_canonical():
-    """Conditioned grid dimension in canonical_form"""
-    validate_dimensions(
-        [
-            {
-                "type": "vary",
-                "values": [
-                    {"name": "R0", "values": [1.0, 2.0]},
-                    {"name": "gamma", "values": [2.0, 3.0]},
-                ],
+def test_conditioned_vary():
+    """Conditioned varying bundle in canonical_form"""
+    validate_parameters(
+        {
+            "my_bundle": {
+                "vary": {"R0": [1.0, 2.0], "gamma": [2.0, 3.0]},
                 "if": {"R0": 1.0},
             }
-        ]
+        }
     )
 
 
 def test_conditioned_vary_short():
-    """Conditioned grid dimension in short form"""
-    validate_dimensions(
-        [
-            {
-                "type": "vary",
-                "values": {"R0": [1.0, 2.0], "gamma": [2.0, 3.0]},
-                "if": {"R0": 1.0},
-            }
-        ]
-    )
+    """Conditioned varying bundle, with one parameter in short form"""
+    validate_parameters({"R0": {"vary": [1.0, 2.0], "if": {"gamma": 2.0}}})
+
+
+def test_fixed_comment():
+    """Fixed parameter with comment"""
+    validate_parameters({"R0": {"fix": 1.0, "comment": "This is a comment"}})
