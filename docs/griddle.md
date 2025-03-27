@@ -8,7 +8,13 @@ This doc describes the latest specification. Previous specifications:
 
 ## Specification
 
-A griddle is a list. Each element is a dictionary representing a *fixed parameter* or a *grid dimension*. Fixed parameters and grid dimensions can be *conditioned*.
+Griddler is a tool for parsing *griddles* to produce a list of *parameter sets*.
+
+A griddle is a Python list. Each element is a dictionary representing a *fixed parameter* or a *grid dimension*. Fixed parameters and grid dimensions can be *conditioned*.
+
+A parameter set is a dictionary who keys are parameter names, of string type, and whose values are the values of the corresponding parameters.
+
+In typical practice, griddles are read in from YAML or JSON files, and the resulting parameter sets are serialized as JSON files. That convention is used in the specifications and examples here.
 
 ### Fixed parameter
 
