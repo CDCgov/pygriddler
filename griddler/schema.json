@@ -7,126 +7,63 @@
         "version": {
             "type": "string"
         },
-        "dimensions": {
-            "type": "array",
-            "items": {
+        "parameters": {
+            "type": "object",
+            "additionalProperties": {
                 "type": "object",
                 "oneOf": [
                     {
-                        "$ref": "#/$defs/fix_canonical"
+                        "description": "fixed parameter",
+                        "properties": {
+                            "fix": {},
+                            "if": {
+                                "type": "object"
+                            },
+                            "comment": {}
+                        },
+                        "required": [
+                            "fix"
+                        ],
+                        "additionalProperties": false
                     },
                     {
-                        "$ref": "#/$defs/fix_short"
+                        "description": "varying bundle of parameters",
+                        "properties": {
+                            "vary": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "array"
+                                }
+                            },
+                            "if": {
+                                "type": "object"
+                            },
+                            "comment": {}
+                        },
+                        "required": [
+                            "vary"
+                        ],
+                        "additionalProperties": false
                     },
                     {
-                        "$ref": "#/$defs/vary"
-                    },
-                    {
-                        "$ref": "#/$defs/vary_short_one"
+                        "description": "varying bundle, with one parameter, in short form",
+                        "properties": {
+                            "vary": {
+                                "type": "array"
+                            },
+                            "if": {
+                                "type": "object"
+                            },
+                            "comment": {}
+                        },
+                        "required": [
+                            "vary"
+                        ],
+                        "additionalProperties": false
                     }
                 ]
             }
-        }
-    },
-    "$defs": {
-        "fix_canonical": {
-            "description": "fixed variable in canonical form",
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "type": {
-                    "const": "fix"
-                },
-                "value": {},
-                "if": {
-                    "type": "object"
-                },
-                "comment": {}
-            },
-            "required": [
-                "name",
-                "type",
-                "value"
-            ],
-            "additionalProperties": false
         },
-        "fix_short": {
-            "description": "fixed variable in short form",
-            "type": "object",
-            "minProperties": 1,
-            "maxProperties": 1,
-            "propertyNames": {
-                "$ref": "#/$defs/not_a_reserved_word"
-            }
-        },
-        "vary": {
-            "description": "grid dimension (all except one parameter in short form)",
-            "type": "object",
-            "properties": {
-                "type": {
-                    "const": "vary"
-                },
-                "values": {
-                    "oneOf": [
-                        {
-                            "description": "verbose form of parameter names and values",
-                            "type": "array"
-                        },
-                        {
-                            "description": "short list of parameter names and values",
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "array"
-                            }
-                        }
-                    ]
-                },
-                "if": {
-                    "type": "object"
-                },
-                "comment": {}
-            },
-            "required": [
-                "type",
-                "values"
-            ],
-            "additionalProperties": false
-        },
-        "vary_short_one": {
-            "description": "grid dimension with one parameter in short form",
-            "type": "object",
-            "minProperties": 1,
-            "maxProperties": 1,
-            "additionalProperties": {
-                "type": "object",
-                "additionalProperties": {
-                    "type": "object",
-                    "properties": {
-                        "vary": {
-                            "type": "array"
-                        }
-                    },
-                    "required": [
-                        "vary"
-                    ],
-                    "additionalProperties": false
-                }
-            }
-        },
-        "not_a_reserved_word": {
-            "not": {
-                "enum": [
-                    "name",
-                    "type",
-                    "vary",
-                    "value",
-                    "values",
-                    "if",
-                    "comment"
-                ]
-            }
-        }
+        "additionalProperties": false
     }
 }

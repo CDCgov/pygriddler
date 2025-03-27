@@ -72,6 +72,8 @@ parameters:
   # NAME: {vary: [VALUE1, VALUE2]}
 ```
 
+The top-level `NAME` is used as the parameter name.
+
 ### Conditioned parameters
 
 A conditioned parameter will only be present in a parameter set when some one or more other parameters are present and have some particular values.
