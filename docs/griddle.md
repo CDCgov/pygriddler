@@ -95,17 +95,19 @@ A conditioned parameter will only be present in an parameter set when some one o
   if: {parameter_name1: parameter_value1, parameter_name2: parameter_value2}
   values:
     varying_parameter_name1: [v_param_value1, v_param_value2]
+
+# (there is no short form for one-parameter grid dimension short form)
 ```
 
 ### Comments
 
-Any content in these fields are ignored. This is not important in YAML files, which support comments, but can be useful in a human-written JSON.
+Any content in a `"comment"` field is ignored. This is not important in YAML files, which support comments, but can be useful in a human-written JSON. Comments are only available in canonical forms.
 
 ```yaml
 - name: fixed_parameter_name
+  comment: Whatever is here is ignored
   type: fix
   value: fixed_parameter_value
-  comment: Whatever is here is ignored
 - type: vary
   comment: Whatever is here is ignored
   values:

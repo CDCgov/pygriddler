@@ -14,6 +14,9 @@
                 "$ref": "#/$defs/fix_short"
             },
             {
+                "$ref": "#/$defs/vary"
+            },
+            {
                 "$ref": "#/$defs/vary_short_one"
             }
         ]
@@ -30,6 +33,9 @@
                     "const": "fix"
                 },
                 "value": {},
+                "if": {
+                    "type": "object"
+                },
                 "comment": {}
             },
             "requiredProperties": [
@@ -44,6 +50,39 @@
             "type": "object",
             "minProperties": 1,
             "maxProperties": 1
+        },
+        "vary": {
+            "description": "grid dimension (all except one parameter in short form)",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "const": "vary"
+                },
+                "values": {
+                    "oneOf": [
+                        {
+                            "description": "verbose form of parameter names and values",
+                            "type": "array"
+                        },
+                        {
+                            "description": "short list of parameter names and values",
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "array"
+                            }
+                        }
+                    ]
+                },
+                "if": {
+                    "type": "object"
+                },
+                "comment": {}
+            },
+            "requiredProperties": [
+                "type",
+                "values"
+            ],
+            "additionalProperties": false
         },
         "vary_short_one": {
             "description": "grid dimension with one parameter in short form",
