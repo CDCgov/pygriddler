@@ -12,6 +12,9 @@
             },
             {
                 "$ref": "#/$defs/fix_short"
+            },
+            {
+                "$ref": "#/$defs/vary_short_one"
             }
         ]
     },
@@ -41,6 +44,27 @@
             "type": "object",
             "minProperties": 1,
             "maxProperties": 1
+        },
+        "vary_short_one": {
+            "description": "grid dimension with one parameter in short form",
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 1,
+            "additionalProperties": {
+                "type": "object",
+                "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                        "vary": {
+                            "type": "array"
+                        }
+                    },
+                    "requiredProperties": [
+                        "vary"
+                    ],
+                    "additionalProperties": false
+                }
+            }
         }
     }
 }
