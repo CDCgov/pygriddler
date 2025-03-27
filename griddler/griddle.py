@@ -1,18 +1,85 @@
+import importlib.resources
 import itertools
 import json
+from typing import List
 
+import jsonschema
 import yaml
 
 
-def validate(griddle: dict):
+def load_schema() -> dict:
+    with importlib.resources.open_text("griddler", "schema.json") as f:
+        schema = json.load(f)
+
+    return schema
+
+
+def from_yaml(path: str) -> List[dict]:
+    with open(path) as f:
+        griddle = yaml.safe_load(f)
+
+    return parse(griddle)
+
+
+def from_json(path: str) -> List[dict]:
+    with open(path) as f:
+        griddle = json.load(f)
+
+    return parse(griddle)
+
+
+def parse(griddle: dict) -> List[dict]:
+    """Convert a griddle into a list of parameter sets.
+
+    Args:
+        griddle (dict): griddle
+
+    Returns:
+        List[dict]: list of parameter sets
+    """
+    validate(griddle)
+
+    # check that the `if`s are a DAG
+    # this should be part of validation
+    pass
+
+    # check that varying parameter names are not repeated in the bundles
+    # this should be part of validation
+    pass
+
+    # convert all the short-form varying bundles into canonical form
+    pass
+
+    # get all the varying bundles
+    pass
+
+    # make a grid of the *indices* of the unconditional bundles
+    pass
+
+    # generate parameter sets based on those indices
+    pass
+
+    # add in the unconditional fixed parameters
+    pass
+
+    # implement the conditions?
+    # this might be complicated if there's a DAG
+
+    raise NotImplementedError
+
+
+def validate(griddle: dict) -> None:
     """Validate that a griddle is well-formed
 
     Args:
-        griddle: dictionary
+        griddle (dict): griddle
 
     Raises:
-        AssertionError: if not valid
+        jsonschema.exceptions.ValidationError: if syntactically invalid
+        AssertionError: if semantically invalid
     """
+    jsonschema.validate(instance=griddle, schema=load_schema())
+
     # griddle is a dict
     assert isinstance(griddle, dict)
     # griddle has only the known keys
@@ -30,104 +97,3 @@ def validate(griddle: dict):
     assert (
         "nested_parameters" not in griddle.keys() or "grid_parameters" in griddle.keys()
     )
-
-
-def parse(griddle: dict) -> list[dict]:
-    """Convert a griddle into a list of parameter sets.
-
-    Args:
-        griddle: griddle
-
-    Returns:
-        list of parameter sets
-    """
-    validate(griddle)
-
-    # start with the grid, and if there is no grid, consider the grid empty
-    if "grid_parameters" in griddle:
-        parameter_sets = [
-            dict(zip(griddle["grid_parameters"].keys(), values))
-            for values in itertools.product(*griddle["grid_parameters"].values())
-        ]
-    else:
-        parameter_sets = [{}]
-
-    # find where nested values will get merged, if they are present
-    if "nested_parameters" in griddle:
-        ps_nests = [
-            _match_ps_nest(ps, griddle["nested_parameters"]) for ps in parameter_sets
-        ]
-    else:
-        ps_nests = [None for ps in parameter_sets]
-
-    # merge in baseline values, if present
-    if "baseline_parameters" in griddle:
-        parameter_sets = [ps | griddle["baseline_parameters"] for ps in parameter_sets]
-
-    # update the nested values, if nests were present
-    for ps, nest in zip(parameter_sets, ps_nests):
-        if nest is not None:
-            ps |= nest
-
-    return parameter_sets
-
-
-def _match_ps_nest(parameter_set, nests):
-    """Which nest goes with this parameter set?"""
-    matches = [_match_ps_nest1(parameter_set, nest) for nest in nests]
-    n_matches = matches.count(True)
-    if n_matches == 0:
-        return None
-    if n_matches == 1:
-        return nests[matches.index(True)]
-    else:
-        raise RuntimeError(
-            f"Parameter set {parameter_set} matches multiple nests: {matches}"
-        )
-
-
-def _match_ps_nest1(parameter_set, nest):
-    """Does this parameter_set match this nest?"""
-    # parameter names in common to both the ps and the nest
-    common_keys = parameter_set.keys() & nest.keys()
-    # are the values the same, in the ps and nest, for those common names?
-    return all(nest[key] == parameter_set[key] for key in common_keys)
-
-
-def _read_yaml(path: str) -> dict:
-    """Read a yaml file and return the contents as a dictionary
-
-    Args:
-        path: path to yaml file
-
-    Returns:
-        dictionary
-    """
-    with open(path) as f:
-        raw = yaml.safe_load(f)
-
-    return raw
-
-
-def read(path: str) -> list[dict]:
-    """Read a griddle file, and convert to parameter sets.
-
-    Args:
-        path: path to griddle
-
-    Returns:
-        list of parameter sets
-    """
-    return parse(_read_yaml(path))
-
-
-def read_to_json(path: str) -> str:
-    """Read a griddle file, and convert to parameter sets.
-
-    Args:
-        path: path to griddle
-
-    Returns:
-        JSON version of the list of parameter sets
-    """
-    return json.dumps(read(path), indent=2)
