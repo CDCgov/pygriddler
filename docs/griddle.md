@@ -206,7 +206,7 @@ parameters:
       state: [Virginia, North Dakota]
       capital: [Richmond, Pierre]
   beach_town:
-    if: {state: Virginia}
+    if: {equals: {state: Virginia}}
     vary: [Virginia Beach, Chincoteague, Colonial Beach]
 ```
 

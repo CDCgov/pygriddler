@@ -151,3 +151,34 @@ class TestParse:
         params = {"x": {"fix": "X"}, "y": {"fix": "Y", "if": {"equals": {"x": "X"}}}}
         parameter_sets = griddler.griddle._parse_params(params)
         assert parameter_sets == [{"x": "X", "y": "Y"}]
+
+    def test_subgrid(self):
+        params = {
+            "state_and_capital": {
+                "vary": {
+                    "state": ["Virginia", "North Dakota"],
+                    "capital": ["Richmond", "Pierre"],
+                }
+            },
+            "beach_town": {
+                "if": {"equals": {"state": "Virginia"}},
+                "vary": ["Virginia Beach", "Chincoteague", "Colonial Beach"],
+            },
+        }
+        parameter_sets = griddler.griddle._parse_params(params)
+        print(parameter_sets)
+        expected = [
+            {
+                "state": "Virginia",
+                "capital": "Richmond",
+                "beach_town": "Virginia Beach",
+            },
+            {"state": "Virginia", "capital": "Richmond", "beach_town": "Chincoteague"},
+            {
+                "state": "Virginia",
+                "capital": "Richmond",
+                "beach_town": "Colonial Beach",
+            },
+            {"state": "North Dakota", "capital": "Pierre"},
+        ]
+        assert_list_setequal(parameter_sets, expected)

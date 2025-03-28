@@ -58,7 +58,6 @@ def _parse_params(params: dict) -> List[dict]:
 
     # convert parameter specifications to canonical form
     params = _to_canonical_form(params)
-    print(f"canonical {params=}")
 
     # determine the order in which we'll add parameters to the parameter sets
     param_order = _get_param_order(params)
@@ -67,7 +66,6 @@ def _parse_params(params: dict) -> List[dict]:
     parameter_sets = [{}]
 
     for name in param_order:
-        print(f"{name=}")
         spec = params[name]
 
         new_parameter_sets = []
@@ -176,6 +174,9 @@ def _to_canonical_form(params: dict[str, Any]) -> dict[str, Any]:
             # generate an ad hoc bundle name
             bundle_name = str(uuid.uuid4())
             out[bundle_name] = {"vary": {name: spec["vary"]}}
+
+            if "if" in spec:
+                out[bundle_name]["if"] = spec["if"]
         else:
             out[name] = spec
 
@@ -205,7 +206,7 @@ def _condition_depends_on(cond: dict) -> List[str]:
         assert list(cond.keys()) == ["equals"]
         assert isinstance(cond["equals"], dict)
         assert len(cond["equals"]) == 1
-        return list(cond["equals"].keys())[0]
+        return list(cond["equals"].keys())
     else:
         raise RuntimeError(f"Unknown condition: {cond}")
 
