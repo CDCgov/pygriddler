@@ -9,10 +9,7 @@ A *parameter* consists of a string *name* and a *value* of arbitrary type. A *pa
     This document uses JSON typing nomenclature. A JSON array is like a Python list. A JSON object is a Python dictionary. An object keyword is like a dictionary key.
 
 
-A *griddle* is an object with two keywords: `version` and `parameters`. `version` specifies the version of the griddler schema, currently `"v0.3"`. `parameters` is an object whose keywords are usually parameter names and whose values are parameter *specifications*. Each specification specifies one of:
-
-1. a *fixed* parameter that appears in every parameter set (so long as it is not *conditioned*) with the same value,
-2. a *varying bundle* of parameters that takes on different values in different parameters sets.
+A *griddle* is an object with two keywords: `version` and `parameters`. `version` specifies the version of the griddler schema, currently `"v0.3"`. `parameters` is an object whose keywords are names of parameters or *parameter bundles* and whose values are parameter *specifications*.
 
 In typical practice, griddles are read in from YAML or JSON files, and parameter sets are serialized as JSON files. That convention is used in the examples here.
 
@@ -26,6 +23,8 @@ parameters: {}
 ```
 
 ## Fixed parameters
+
+A *fixed* parameter has the same value in all parameter sets (unless the parameter is *conditioned*).
 
 ```yaml
 version: v0.3
@@ -45,24 +44,9 @@ parameters:
   delay_distribution_pmf: {fix: [0.0, 0.1, 0.2, 0.3, 0.2, 0.1, 0.0]}
 ```
 
-## Varying bundles of parameters
+## Varying parameter
 
-The canonical form is:
-
-```yaml
-parameters:
-  NAME:
-    vary:
-      NAME1: [NAME1_VALUE1, NAME1_VALUE2] # and so on for NAME1_VALUE3, etc.
-      NAME2: [NAME2_VALUE1, NAME2_VALUE2]
-      # and so on for NAME3, etc.
-```
-
-The parameters `NAME1` and `NAME2` are in a *bundle* because they will vary together across parameter sets. In the parameter sets, `NAME1` will take on the `NAME1_VALUE*` values, `NAME2` will take on the `NAME2_VALUE*` values, and so forth. The `*_VALUE1` values will always appear together, the `*_VALUE2` will always appear together, and so forth, so the values lists must all be of equal length. The top-level `NAME`, a unique identifier for the bundle of parameters `NAME1`, `NAME2`, etc. does not appear in the parameter sets.
-
-## Single varying parameters
-
-If there is only one parameter in a bundle, griddler support a short form:
+A *varying* parameter takes on different values in different parameter sets. In the absence of conditioning or bundling, all combinations of all varying parameters will appear in the output datasets.
 
 ```yaml
 parameters:
@@ -72,11 +56,35 @@ parameters:
   # NAME: {vary: [VALUE1, VALUE2]}
 ```
 
-The top-level `NAME` is used as the parameter name.
+## Varying bundles of parameters
+
+In a *varying bundle* of parameters, multiple parameters take on different values in different data sets, but those parameters vary together.
+
+```yaml
+parameters:
+  BUNDLE_NAME:
+    vary:
+      NAME1: [NAME1_VALUE1, NAME1_VALUE2] # and so on for NAME1_VALUE3, etc.
+      NAME2: [NAME2_VALUE1, NAME2_VALUE2]
+      # and so on for NAME3, etc.
+```
+
+In the parameter sets, `NAME1` will take on the `NAME1_VALUE*` values, `NAME2` will take on the `NAME2_VALUE*` values, and so forth. The `*_VALUE1` values will always appear together, the `*_VALUE2` will always appear together, and so forth, so the values lists must all be of equal length. `BUNDLE_NAME` is a unique identifier for the bundle of parameters `NAME1`, `NAME2`, etc. and does not appear in the parameter sets. `BUNDLE_NAME` cannot be the same as any parameter name.
+
+Note that a single varying parameter could be written as:
+
+```yaml
+parameters:
+    BUNDLE_NAME:
+      vary:
+        NAME: [VALUE1, VALUE2]
+```
+
+with the caveat that `BUNDLE_NAME` and `NAME` cannot be the same.
 
 ### Conditioned parameters
 
-A conditioned parameter will only be present in a parameter set when some one or more other parameters are present and have some particular values.
+A *conditioned* parameter will only be present in a parameter set when some one or more other parameters are present and take on some particular values.
 
 ```yaml
 parameters:
@@ -93,6 +101,8 @@ parameters:
     if: {COND_NAME1: COND_VALUE1, COND_NAME2: COND_VALUE2}
     vary: [VALUE1, VALUE2]
 ```
+
+The dependencies formed by the `if` statements cannot be cyclical.
 
 ## Comments
 

@@ -4,6 +4,7 @@ import json
 from typing import List
 
 import jsonschema
+import networkx as nx
 import yaml
 
 
@@ -37,18 +38,27 @@ def parse(griddle: dict) -> List[dict]:
     Returns:
         List[dict]: list of parameter sets
     """
-    validate(griddle)
+    # do syntactic validation
+    jsonschema.validate(instance=griddle, schema=load_schema())
 
-    # check that the `if`s are a DAG
-    # this should be part of validation
-    pass
+    # check for version
+    assert griddle["version"] == "v0.3", "Only v0.3 griddles are supported"
 
-    # check that varying parameter names are not repeated in the bundles
-    # this should be part of validation
-    pass
+    # extract the parameters section of the griddle
+    params = griddle["parameters"]
+    assert isinstance(params, dict)
+
+    # check that no parameter names are repeated
+    _validate_parameter_names(params)
 
     # convert all the short-form varying bundles into canonical form
-    pass
+    params = {name: _to_canonical_form(name, spec) for name, spec in params.items()}
+
+    # determine the order in which we'll add parameters to the parameter sets
+    param_order = _get_param_order(params)
+
+    # initialize the output parameter sets
+    parameter_sets = [{}]
 
     # get all the varying bundles
     pass
@@ -68,32 +78,74 @@ def parse(griddle: dict) -> List[dict]:
     raise NotImplementedError
 
 
-def validate(griddle: dict) -> None:
-    """Validate that a griddle is well-formed
+def _get_param_order(params: dict) -> List[str]:
+    """Get the order of parameters in the griddle, using the DAG of `if`s.
 
     Args:
-        griddle (dict): griddle
+        ps (dict): dictionary of name: specification
 
-    Raises:
-        jsonschema.exceptions.ValidationError: if syntactically invalid
-        AssertionError: if semantically invalid
+    Returns:
+        List[str]: order of parameters
     """
-    jsonschema.validate(instance=griddle, schema=load_schema())
+    # create a directed graph from the `if`s
+    G = nx.DiGraph()
+    for name, spec in params.items():
+        G.add_node(name)
 
-    # griddle is a dict
-    assert isinstance(griddle, dict)
-    # griddle has only the known keys
-    assert all(
-        [
-            key in ["baseline_parameters", "grid_parameters", "nested_parameters"]
-            for key in griddle.keys()
-        ]
-    )
-    # griddle has at least one of baseline or grid
-    assert any(
-        key in griddle.keys() for key in ["baseline_parameters", "grid_parameters"]
-    )
-    # can only have a nest if it has a grid
-    assert (
-        "nested_parameters" not in griddle.keys() or "grid_parameters" in griddle.keys()
-    )
+        # if this parameter depends on other ones, add edges from
+        # those parameters to this one
+        if "if" in spec:
+            for cond_name in spec["if"].keys():
+                G.add_edge(cond_name, name)
+
+    # confirm this graph is a DAG
+    if not nx.is_directed_acyclic_graph(G):
+        raise RuntimeError("The `if` conditions form a cycle.")
+
+    # get the topological sort of the graph
+    return list(nx.topological_sort(G))
+
+
+def _validate_parameter_names(params: dict) -> None:
+    """Check that there are no name collisions, especially with the varying
+    bundles.
+
+    Args:
+        params (dict): dictionary of name: specification
+    """
+    names = []
+    for name, spec in params.items():
+        if "fix" in spec:
+            assert name not in names, f"Duplicate parameter name: {name}"
+            names.append(name)
+        elif "vary" in spec and isinstance(spec["vary"], dict):
+            # this is a canonical form bundle
+            for in_bundle_name in spec["vary"].keys():
+                assert in_bundle_name not in names, (
+                    f"Duplicate parameter name(s): {in_bundle_name}"
+                )
+                names.extend(in_bundle_name)
+        elif "vary" in spec and isinstance(spec["vary"], list):
+            # this is a short-form bundle
+            assert name not in names, f"Duplicate parameter name: {name}"
+            names.append(name)
+        else:
+            raise RuntimeError(f"Unknown parameter specification: {name}: {spec}")
+
+
+def _to_canonical_form(name: str, spec: dict) -> dict:
+    """Convert a parameter specification into canonical form.
+
+    Args:
+        name (str): parameter (or bundle) name
+        spec (dict): parameter specification
+
+    Returns:
+        dict: canonical form
+    """
+    # if this is a short-form bundle, convert it to canonical form
+    if "vary" in spec and isinstance(spec["vary"], list):
+        return {spec["name"]: {"vary": {spec["name"]: spec["vary"]}}}
+
+    # otherwise, just return the original spec
+    return spec

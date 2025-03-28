@@ -1,9 +1,45 @@
+import pytest
 import yaml
 
-from griddler.griddle import _match_ps_nest, parse, read, read_to_json
+import griddler.griddle
+
+# from griddler.griddle import _match_ps_nest, parse, read, read_to_json
+
+
+def test_get_param_order_fail_not_dag_minimal():
+    params = {
+        "A": {"fix": "a", "if": {"B": "b"}},
+        "B": {"fix": "b", "if": {"A": "a"}},
+    }
+    with pytest.raises(RuntimeError, match="The `if` conditions form a cycle"):
+        griddler.griddle._get_param_order(params)
+
+
+def test_get_param_order_simple():
+    # B depends on A, so A should come first
+    params = {
+        "A": {"fix": "a"},
+        "B": {"fix": "b", "if": {"A": "a"}},
+    }
+    assert griddler.griddle._get_param_order(params) == ["A", "B"]
+
+
+def test_get_param_order_multiple():
+    # B depends on A, so A should come first
+    # C isn't part of the DAG, so it can come in any place
+    params = {
+        "A": {"fix": "a"},
+        "B": {"fix": "b", "if": {"A": "a"}},
+        "C": {"fix": "c"},
+    }
+    order = griddler.griddle._get_param_order(params)
+
+    assert set(order) == {"A", "B", "C"}
+    assert order.index("A") < order.index("B")
 
 
 def test_baseline_only():
+    raise NotImplementedError
     griddle = yaml.safe_load("""
     baseline_parameters:
       R0: 1.5
@@ -15,6 +51,7 @@ def test_baseline_only():
 
 
 def test_grid_only():
+    raise NotImplementedError
     griddle = yaml.safe_load("""
     grid_parameters:
       R0: [1.0, 2.0]
@@ -30,6 +67,7 @@ def test_grid_only():
 
 
 def test_match_nest():
+    raise NotImplementedError
     assert _match_ps_nest(
         parameter_set={"scenario": "optimistic"},
         nests=[
@@ -40,6 +78,7 @@ def test_match_nest():
 
 
 def test_baseline_grid_nested():
+    raise NotImplementedError
     griddle = yaml.safe_load("""
     baseline_parameters:
       R0: 1.0
@@ -63,6 +102,7 @@ def test_baseline_grid_nested():
 
 
 def test_multiple_grid_nested():
+    raise NotImplementedError
     parameter_sets = read("tests/fixtures/test_griddle_test_multiple_grid_nested.yaml")
 
     assert parameter_sets == [
@@ -76,6 +116,7 @@ def test_multiple_grid_nested():
 
 
 def test_nested_dicts():
+    raise NotImplementedError
     griddle = yaml.safe_load("""
     baseline_parameters:
       random_numbers:
@@ -89,6 +130,7 @@ def test_nested_dicts():
 
 
 def test_read_to_json():
+    raise NotImplementedError
     yaml_path = "tests/fixtures/test_griddle_test_multiple_grid_nested.yaml"
 
     with open("tests/fixtures/test_griddle_test_multiple_grid_nested.json") as f:
