@@ -4,7 +4,7 @@ import pytest
 
 import griddler.griddle
 
-schema = griddler.griddle.load_schema()
+schema = griddler.griddle.Griddle.load_schema()
 
 
 def validate_griddle(x: dict) -> None:
