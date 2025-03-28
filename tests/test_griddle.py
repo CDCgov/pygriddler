@@ -210,3 +210,21 @@ class TestParse:
             {"state": "North Dakota", "capital": "Pierre"},
         ]
         assert_list_setequal(parameter_sets, expected)
+
+    def test_conditional_newton_example(self):
+        params_dict = {
+            "method": {"vary": ["newton", "brent"]},
+            "start_point": {
+                "if": {"equals": {"method": "newton"}},
+                "vary": [0.25, 0.50, 0.75],
+            },
+            "bounds": {"if": {"equals": {"method": "brent"}}, "fix": [0.0, 1.0]},
+        }
+        parameter_sets = Griddle._parse_params(params_dict)
+        expected = [
+            {"method": "newton", "start_point": 0.25},
+            {"method": "newton", "start_point": 0.5},
+            {"method": "newton", "start_point": 0.75},
+            {"method": "brent", "bounds": [0.0, 1.0]},
+        ]
+        assert_list_setequal(parameter_sets, expected)
