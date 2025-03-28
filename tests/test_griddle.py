@@ -1,139 +1,153 @@
 import pytest
-import yaml
 
 import griddler.griddle
 
+
 # from griddler.griddle import _match_ps_nest, parse, read, read_to_json
+def assert_list_setequal(a, b):
+    """Assert that two lists have the same items, potentially in different order."""
+    assert len(a) == len(b)
+    for x in a:
+        assert x in b, f"{x} not in {b}"
+
+    for x in b:
+        assert x in a, f"{x} not in {a}"
 
 
-def test_get_param_order_fail_not_dag_minimal():
-    params = {
-        "A": {"fix": "a", "if": {"B": "b"}},
-        "B": {"fix": "b", "if": {"A": "a"}},
-    }
-    with pytest.raises(RuntimeError, match="The `if` conditions form a cycle"):
-        griddler.griddle._get_param_order(params)
+class TestParamOrder:
+    def test_fail_not_dag_minimal(self):
+        params = {
+            "A": {"fix": "a", "if": {"B": "b"}},
+            "B": {"fix": "b", "if": {"A": "a"}},
+        }
+        with pytest.raises(RuntimeError, match="The `if` conditions form a cycle"):
+            griddler.griddle._get_param_order(params)
+
+    def test_simple(self):
+        # B depends on A, so A should come first
+        params = {
+            "A": {"fix": "a"},
+            "B": {"fix": "b", "if": {"A": "a"}},
+        }
+        assert griddler.griddle._get_param_order(params) == ["A", "B"]
+
+    def test_multiple(self):
+        # B depends on A, so A should come first
+        # C isn't part of the DAG, so it can come in any place
+        params = {
+            "A": {"fix": "a"},
+            "B": {"fix": "b", "if": {"A": "a"}},
+            "C": {"fix": "c"},
+        }
+        order = griddler.griddle._get_param_order(params)
+
+        assert set(order) == {"A", "B", "C"}
+        assert order.index("A") < order.index("B")
 
 
-def test_get_param_order_simple():
-    # B depends on A, so A should come first
-    params = {
-        "A": {"fix": "a"},
-        "B": {"fix": "b", "if": {"A": "a"}},
-    }
-    assert griddler.griddle._get_param_order(params) == ["A", "B"]
+class TestValidateNames:
+    def test_simple(self):
+        raise NotImplementedError
 
 
-def test_get_param_order_multiple():
-    # B depends on A, so A should come first
-    # C isn't part of the DAG, so it can come in any place
-    params = {
-        "A": {"fix": "a"},
-        "B": {"fix": "b", "if": {"A": "a"}},
-        "C": {"fix": "c"},
-    }
-    order = griddler.griddle._get_param_order(params)
-
-    assert set(order) == {"A", "B", "C"}
-    assert order.index("A") < order.index("B")
+class TestToCanonicalForm:
+    def test_simple(self):
+        raise NotImplementedError
 
 
-def test_baseline_only():
-    raise NotImplementedError
-    griddle = yaml.safe_load("""
-    baseline_parameters:
-      R0: 1.5
-      gamma: 2.0
-    """)
-
-    parameter_sets = parse(griddle)
-    assert parameter_sets == [{"R0": 1.5, "gamma": 2.0}]
+class TestEvalCondition:
+    def test_simple(self):
+        raise NotImplementedError
 
 
-def test_grid_only():
-    raise NotImplementedError
-    griddle = yaml.safe_load("""
-    grid_parameters:
-      R0: [1.0, 2.0]
-      gamma: [1.0, 2.0]
-    """)
-    parameter_sets = parse(griddle)
-    assert parameter_sets == [
-        {"R0": 1.0, "gamma": 1.0},
-        {"R0": 1.0, "gamma": 2.0},
-        {"R0": 2.0, "gamma": 1.0},
-        {"R0": 2.0, "gamma": 2.0},
-    ]
+class TestConditionDependsOn:
+    def test_simple(self):
+        raise NotImplementedError
 
 
-def test_match_nest():
-    raise NotImplementedError
-    assert _match_ps_nest(
-        parameter_set={"scenario": "optimistic"},
-        nests=[
-            {"scenario": "optimistic", "R0": 0.5},
-            {"scenario": "pessimistic", "R0": 1.5},
-        ],
-    ) == {"scenario": "optimistic", "R0": 0.5}
+class TestParse:
+    def test_minimal(self):
+        griddle = {"version": "v0.3", "parameters": {}}
+        parameter_sets = griddler.griddle.parse(griddle)
+        assert parameter_sets == [{}]
 
+    def test_fixed_only(self):
+        griddle = {"version": "v0.3", "parameters": {"R0": {"fix": 1.5}}}
+        parameter_sets = griddler.griddle.parse(griddle)
+        assert parameter_sets == [{"R0": 1.5}]
 
-def test_baseline_grid_nested():
-    raise NotImplementedError
-    griddle = yaml.safe_load("""
-    baseline_parameters:
-      R0: 1.0
+    def test_vary_one_canonical_one_value(self):
+        params = {"my_bundle": {"vary": {"R0": [1.0]}}}
+        parameter_sets = griddler.griddle._parse_params(params)
+        assert parameter_sets == [{"R0": 1.0}]
 
-    grid_parameters:
-      scenario: [baseline, optimistic, pessimistic]
+    def test_vary_one_canonical(self):
+        params = {"my_bundle": {"vary": {"R0": [1.0, 2.0]}}}
+        parameter_sets = griddler.griddle._parse_params(params)
+        assert_list_setequal(parameter_sets, [{"R0": 1.0}, {"R0": 2.0}])
 
-    nested_parameters:
-      - scenario: optimistic
-        R0: 0.5
-      - scenario: pessimistic
-        R0: 2.0
-    """)
+    def test_vary_one_short(self):
+        params = {"R0": {"vary": [1.0, 2.0]}}
+        parameter_sets = griddler.griddle._parse_params(params)
+        assert_list_setequal(
+            parameter_sets,
+            [
+                {"R0": 1.0},
+                {"R0": 2.0},
+            ],
+        )
 
-    parameter_sets = parse(griddle)
-    assert parameter_sets == [
-        {"scenario": "baseline", "R0": 1.0},
-        {"scenario": "optimistic", "R0": 0.5},
-        {"scenario": "pessimistic", "R0": 2.0},
-    ]
+    def test_2x2_grid(self):
+        params = {"R0": {"vary": [1.0, 2.0]}, "gamma": {"vary": [1.0, 2.0]}}
+        parameter_sets = griddler.griddle._parse_params(params)
+        assert_list_setequal(
+            parameter_sets,
+            [
+                {"R0": 1.0, "gamma": 1.0},
+                {"R0": 1.0, "gamma": 2.0},
+                {"R0": 2.0, "gamma": 1.0},
+                {"R0": 2.0, "gamma": 2.0},
+            ],
+        )
 
+    def test_bundle(self):
+        params = {
+            "R0": {"fix": 1.0},
+            "scenario_bundle": {
+                "vary": {"scenario": ["bad", "good"], "gamma": [1.0, 2.0]}
+            },
+        }
+        parameter_sets = griddler.griddle._parse_params(params)
+        assert_list_setequal(
+            parameter_sets,
+            [
+                {"R0": 1.0, "scenario": "bad", "gamma": 1.0},
+                {"R0": 1.0, "scenario": "good", "gamma": 2.0},
+            ],
+        )
 
-def test_multiple_grid_nested():
-    raise NotImplementedError
-    parameter_sets = read("tests/fixtures/test_griddle_test_multiple_grid_nested.yaml")
+    def test_vary_one_vary_bundle(self):
+        params = {
+            "gamma": {"vary": [0.1, 0.2]},
+            "scenario": {"vary": {"R0": [1.0, 2.0], "theta": [1.0, 2.0]}},
+        }
+        parameter_sets = griddler.griddle._parse_params(params)
 
-    assert parameter_sets == [
-        {"scenario": "baseline", "R0": 1.0, "gamma": 0.1},
-        {"scenario": "baseline", "R0": 1.0, "gamma": 0.2},
-        {"scenario": "optimistic", "R0": 0.5, "gamma": 0.1},
-        {"scenario": "optimistic", "R0": 0.5, "gamma": 0.2},
-        {"scenario": "pessimistic", "R0": 2.0, "gamma": 0.1},
-        {"scenario": "pessimistic", "R0": 2.0, "gamma": 0.2},
-    ]
+        expected = [
+            {"gamma": 0.1, "R0": 1.0, "theta": 1.0},
+            {"gamma": 0.1, "R0": 2.0, "theta": 2.0},
+            {"gamma": 0.2, "R0": 1.0, "theta": 1.0},
+            {"gamma": 0.2, "R0": 2.0, "theta": 2.0},
+        ]
 
+        assert_list_setequal(parameter_sets, expected)
 
-def test_nested_dicts():
-    raise NotImplementedError
-    griddle = yaml.safe_load("""
-    baseline_parameters:
-      random_numbers:
-        distribution: gamma
-        shape: 1.0
-        scale: 0.5
-    """)
+    def test_if_trivial(self):
+        params = {"x": {"fix": "X", "if": True}}
+        parameter_sets = griddler.griddle._parse_params(params)
+        assert parameter_sets == [{"x": "X"}]
 
-    parameter_sets = parse(griddle)
-    assert parameter_sets == [griddle["baseline_parameters"]]
-
-
-def test_read_to_json():
-    raise NotImplementedError
-    yaml_path = "tests/fixtures/test_griddle_test_multiple_grid_nested.yaml"
-
-    with open("tests/fixtures/test_griddle_test_multiple_grid_nested.json") as f:
-        json_text = f.read()
-
-    assert read_to_json(yaml_path) + "\n" == json_text
+    def test_if_simple(self):
+        params = {"x": {"fix": "X"}, "y": {"fix": "Y", "if": {"equals": {"x": "X"}}}}
+        parameter_sets = griddler.griddle._parse_params(params)
+        assert parameter_sets == [{"x": "X", "y": "Y"}]

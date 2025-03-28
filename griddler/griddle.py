@@ -1,6 +1,6 @@
 import importlib.resources
-import itertools
 import json
+import uuid
 from typing import Any, List
 
 import jsonschema
@@ -48,11 +48,17 @@ def parse(griddle: dict) -> List[dict]:
     params = griddle["parameters"]
     assert isinstance(params, dict)
 
+    return _parse_params(params)
+
+
+def _parse_params(params: dict) -> List[dict]:
+    """Parse the parameters section of the griddle"""
     # check that no parameter names are repeated
     _validate_parameter_names(params)
 
-    # convert all the short-form varying bundles into canonical form
-    params = {name: _to_canonical_form(name, spec) for name, spec in params.items()}
+    # convert parameter specifications to canonical form
+    params = _to_canonical_form(params)
+    print(f"canonical {params=}")
 
     # determine the order in which we'll add parameters to the parameter sets
     param_order = _get_param_order(params)
@@ -61,49 +67,38 @@ def parse(griddle: dict) -> List[dict]:
     parameter_sets = [{}]
 
     for name in param_order:
+        print(f"{name=}")
         spec = params[name]
 
-        # if this is a fixed parameter, add it to all the parameter sets
-        if "fix" in spec:
-            # if this is a short-form bundle, just add the value
-            if isinstance(spec["fix"], list):
-                for i, val in enumerate(spec["fix"]):
-                    parameter_sets[i][name] = val
-            else:
-                for ps in parameter_sets:
+        new_parameter_sets = []
+
+        while parameter_sets:
+            ps = parameter_sets.pop(0)
+
+            # check if the `if` condition is satisfied
+            assert "if" in spec
+            if _eval_condition(spec["if"], ps):
+                # if this is a fixed parameter, add it
+                if "fix" in spec:
                     ps[name] = spec["fix"]
+                    new_parameter_sets.append(ps)
+                # if this is a varying parameter, add new values
+                elif "vary" in spec:
+                    # get the length of the
+                    ns = [len(values) for values in spec["vary"].values()]
+                    assert len(set(ns)) == 1, (
+                        f"Varying parameters in bundle {name} must have the same number of values"
+                    )
+                    n = ns[0]
+                    for i in range(n):
+                        this_ps = ps.copy()
+                        for vary_name, vary_values in spec["vary"].items():
+                            this_ps[vary_name] = vary_values[i]
+                        new_parameter_sets.append(this_ps)
 
-        # if this is a varying bundle, create new parameter sets
-        elif "vary" in spec:
-            # get the varying parameters
-            varying_params = spec["vary"]
+        parameter_sets = new_parameter_sets
 
-            # create new parameter sets based on the varying parameters
-            new_parameter_sets = []
-            for ps in parameter_sets:
-                for var_name, var_values in varying_params.items():
-                    for val in var_values:
-                        new_ps = ps.copy()
-                        new_ps[var_name] = val
-                        new_parameter_sets.append(new_ps)
-            parameter_sets = new_parameter_sets
-
-    # get all the varying bundles
-    pass
-
-    # make a grid of the *indices* of the unconditional bundles
-    pass
-
-    # generate parameter sets based on those indices
-    pass
-
-    # add in the unconditional fixed parameters
-    pass
-
-    # implement the conditions?
-    # this might be complicated if there's a DAG
-
-    raise NotImplementedError
+    return parameter_sets
 
 
 def _get_param_order(params: dict) -> List[str]:
@@ -122,9 +117,9 @@ def _get_param_order(params: dict) -> List[str]:
 
         # if this parameter depends on other ones, add edges from
         # those parameters to this one
-        if "if" in spec:
-            for cond_name in spec["if"].keys():
-                G.add_edge(cond_name, name)
+        assert "if" in spec
+        for cond_name in _condition_depends_on(spec["if"]):
+            G.add_edge(cond_name, name)
 
     # confirm this graph is a DAG
     if not nx.is_directed_acyclic_graph(G):
@@ -161,58 +156,78 @@ def _validate_parameter_names(params: dict) -> None:
             raise RuntimeError(f"Unknown parameter specification: {name}: {spec}")
 
 
-def _to_canonical_form(name: str, spec: dict[str, Any]) -> dict[str, Any]:
-    """Convert a parameter specification into canonical form.
+def _to_canonical_form(params: dict[str, Any]) -> dict[str, Any]:
+    """Convert parameter specifications into canonical form, including:
+
+    - Ensure `if` conditions for all parameters & bundles
+    - Change single-variable varying into bundles
 
     Args:
-        name (str): parameter (or bundle) name
-        spec (dict): parameter specification
+        params (dict): parameter specifications
 
     Returns:
         dict: canonical form
     """
-    # if this is a short-form bundle, convert it to canonical form
-    if "vary" in spec and isinstance(spec["vary"], list):
-        return {spec["name"]: {"vary": {spec["name"]: spec["vary"]}}}
+    out = {}
 
-    # otherwise, just return the original spec
-    return spec
+    # convert short-forms to bundles
+    for name, spec in params.items():
+        if "vary" in spec and isinstance(spec["vary"], list):
+            # generate an ad hoc bundle name
+            bundle_name = str(uuid.uuid4())
+            out[bundle_name] = {"vary": {name: spec["vary"]}}
+        else:
+            out[name] = spec
+
+    # add `if` if absent
+    for name in out.keys():
+        if "if" not in out[name]:
+            out[name]["if"] = True
+
+    return out
 
 
-def _spec_matches(spec: dict, param_set: dict[str, Any]) -> bool:
-    """Check if a parameter specification matches a parameter set.
+def _condition_depends_on(cond: dict) -> List[str]:
+    """Get the names of parameters that this condition depends on.
 
     Args:
-        spec (dict): parameter specification
+        cond (dict): condition
+
+    Returns:
+        List[str]: names of parameters
+    """
+    if isinstance(cond, bool):
+        # if this is a boolean condition, return an empty list
+        return []
+    elif isinstance(cond, dict):
+        # we only support equals statements for now
+        assert len(cond) == 1
+        assert list(cond.keys()) == ["equals"]
+        assert isinstance(cond["equals"], dict)
+        assert len(cond["equals"]) == 1
+        return list(cond["equals"].keys())[0]
+    else:
+        raise RuntimeError(f"Unknown condition: {cond}")
+
+
+def _eval_condition(cond: bool | dict, param_set: dict[str, Any]) -> bool:
+    """Check if an `if` condition is satisfied.
+
+    Args:
+        cond (bool | dict): if condition
         param_set (dict): parameter set
 
     Returns:
         bool: if the spec matches the set
     """
-    if "if" not in spec:
-        return True
-    elif "if" in spec:
-        for cond_name, cond_values in spec["if"].items():
-            if cond_name not in param_set:
-                return False
-            else:
-                pass
-                # for
-    # check if this is a fixed parameter
-    if "fix" in spec:
-        return spec["fix"] == value
+    if isinstance(cond, bool):
+        # if this is a boolean condition, return it
+        return cond
+    elif isinstance(cond, dict):
+        # we only support equals statements for now
+        assert list(cond.keys()) == ["equals"]
+        assert isinstance(cond["equals"], dict)
+        assert len(cond["equals"]) == 1
+        cond_name, cond_value = list(cond["equals"].items())[0]
 
-    # check if this is a varying bundle
-    elif "vary" in spec:
-        # if this is a canonical form bundle, check the values
-        if isinstance(spec["vary"], dict):
-            return all(
-                _spec_matches(spec["vary"][name], name, value)
-                for name, value in spec["vary"].items()
-            )
-        # if this is a short-form bundle, check the values
-        elif isinstance(spec["vary"], list):
-            return value in spec["vary"]
-
-    # otherwise, return False
-    return False
+        return cond_name in param_set and param_set[cond_name] == cond_value

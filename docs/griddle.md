@@ -86,22 +86,23 @@ with the caveat that `BUNDLE_NAME` and `NAME` cannot be the same.
 
 A *conditioned* parameter will only be present in a parameter set when some one or more other parameters are present and take on some particular values. A the value associated with the `if` keyword is a *condition* that evaluates to true or false.
 
-For now, the only supported condition is a test for equality of a single parameter to a single value `{equals: {COND_NAME: COND_VALUE}}`. Future versions may support more complex atomic conditions like membership and boolean logic to combine conditions.
+For now, the only supported conditions are:
+
+1. `true` and
+2. a test for equality of a single parameter to a single value: `{equals: {COND_NAME: COND_VALUE}}`.
+
+Future versions may support more complex atomic conditions like membership and boolean logic to combine conditions.
 
 ```yaml
 parameters:
   FIXED_NAME:
-    if: {equals: {COND_NAME: COND_VALUE}}
+    if: true
     fix: VALUE
 
   VARYING_BUNDLE_NAME:
     if: {equals: {COND_NAME: COND_VALUE}}
     vary:
       VARYING_PARAM_NAME: [VALUE1, VALUE2]
-
-  VARYING_PARAM_NAME:
-    if: {equals: {COND_NAME: COND_VALUE}}
-    vary: [VALUE1, VALUE2]
 ```
 
 The dependencies formed by the `if` statements cannot be cyclical.
