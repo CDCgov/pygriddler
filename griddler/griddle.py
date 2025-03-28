@@ -1,7 +1,7 @@
 import importlib.resources
 import json
 import uuid
-from typing import Any, Iterable, List
+from typing import Any, Iterable, List, Set
 
 import jsonschema
 import networkx as nx
@@ -24,9 +24,10 @@ class Param:
                 if_=spec.get("if", True),
             )
         elif "vary" in spec and isinstance(spec["vary"], list):
+            bundle_name = f"bundle-{name}-{uuid.uuid4()}"
             return Bundle(
                 # generate an ad hoc bundle name
-                name=str(uuid.uuid4()),
+                name=bundle_name,
                 # put the parameter name inside the bundle
                 parameter_names=[name],
                 values=[spec["vary"]],
@@ -35,7 +36,7 @@ class Param:
         else:
             raise RuntimeError(f"Unknown parameter specification: {name}: {spec}")
 
-    def depends_on(self) -> List[str]:
+    def depends_on(self) -> Set[str]:
         """Get the names of parameters that this parameter depends on.
 
         Returns:
@@ -43,14 +44,14 @@ class Param:
         """
         if isinstance(self.if_, bool):
             # if this is a boolean condition, return an empty list
-            return []
+            return set()
         elif isinstance(self.if_, dict):
             # we only support equals statements for now
             assert len(self.if_) == 1
             assert list(self.if_.keys()) == ["equals"]
             assert isinstance(self.if_["equals"], dict)
             assert len(self.if_["equals"]) == 1
-            return list(self.if_["equals"].keys())
+            return set(self.if_["equals"].keys())
         else:
             raise RuntimeError(f"Unknown condition: {self.if_}")
 
@@ -190,6 +191,10 @@ class Griddle:
                     augmented_sets = param.augment_parameter_set(ps)
                     # add the new parameter sets to the list
                     new_parameter_sets.extend(augmented_sets)
+                else:
+                    # if the condition isn't satisfied, just add the old
+                    # parameter set to the list
+                    new_parameter_sets.append(ps)
 
             parameter_sets = new_parameter_sets
 

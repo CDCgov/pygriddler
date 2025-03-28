@@ -1,6 +1,6 @@
 import pytest
 
-from griddler.griddle import Griddle, Param
+from griddler.griddle import FixParam, Griddle, Param
 
 
 # from griddler.griddle import _match_ps_nest, parse, read, read_to_json
@@ -52,17 +52,45 @@ class TestParamOrder:
 
 class TestValidateNames:
     def test_simple(self):
-        raise NotImplementedError
+        params_dict = {"A": {"fix": "a"}, "B": {"vary": {"A": [1, 2]}}}
+        params = params_from_json(params_dict)
+        with pytest.raises(AssertionError, match=r"(?i)duplicate parameter name"):
+            Griddle._validate_parameter_names(params)
 
 
 class TestEvalCondition:
-    def test_simple(self):
-        raise NotImplementedError
+    def test_trivial(self):
+        assert FixParam(name="x", value="x", if_=True).eval_condition({}) is True
+
+    def test_trivial_with_value(self):
+        assert (
+            FixParam(name="x", value="x", if_=True).eval_condition({"y": "y"}) is True
+        )
+
+    def test_simple_equals(self):
+        assert (
+            FixParam(name="x", value="x", if_={"equals": {"y": "y"}}).eval_condition(
+                {"y": "y"}
+            )
+            is True
+        )
+
+        assert (
+            FixParam(name="x", value="x", if_={"equals": {"y": "y"}}).eval_condition(
+                {"y": "z"}
+            )
+            is False
+        )
 
 
 class TestConditionDependsOn:
-    def test_simple(self):
-        raise NotImplementedError
+    def test_fixed_none(self):
+        assert FixParam(name="x", value="x", if_=True).depends_on() == set()
+
+    def test_fixed(self):
+        assert FixParam(
+            name="x", value="x", if_={"equals": {"y": "y"}}
+        ).depends_on() == {"y"}
 
 
 class TestParse:
