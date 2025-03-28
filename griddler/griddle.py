@@ -1,234 +1,288 @@
 import importlib.resources
 import json
 import uuid
-from typing import Any, List
+from typing import Any, Iterable, List
 
 import jsonschema
 import networkx as nx
 import yaml
 
 
-def load_schema() -> dict:
-    with importlib.resources.open_text("griddler", "schema.json") as f:
-        schema = json.load(f)
+class Param:
+    name: str
+    if_: bool | dict
 
-    return schema
-
-
-def from_yaml(path: str) -> List[dict]:
-    with open(path) as f:
-        griddle = yaml.safe_load(f)
-
-    return parse(griddle)
-
-
-def from_json(path: str) -> List[dict]:
-    with open(path) as f:
-        griddle = json.load(f)
-
-    return parse(griddle)
-
-
-def parse(griddle: dict) -> List[dict]:
-    """Convert a griddle into a list of parameter sets.
-
-    Args:
-        griddle (dict): griddle
-
-    Returns:
-        List[dict]: list of parameter sets
-    """
-    # do syntactic validation
-    jsonschema.validate(instance=griddle, schema=load_schema())
-
-    # check for version
-    assert griddle["version"] == "v0.3", "Only v0.3 griddles are supported"
-
-    # extract the parameters section of the griddle
-    params = griddle["parameters"]
-    assert isinstance(params, dict)
-
-    return _parse_params(params)
-
-
-def _parse_params(params: dict) -> List[dict]:
-    """Parse the parameters section of the griddle"""
-    # check that no parameter names are repeated
-    _validate_parameter_names(params)
-
-    # convert parameter specifications to canonical form
-    params = _to_canonical_form(params)
-
-    # determine the order in which we'll add parameters to the parameter sets
-    param_order = _get_param_order(params)
-
-    # initialize the output parameter sets
-    parameter_sets = [{}]
-
-    for name in param_order:
-        spec = params[name]
-
-        new_parameter_sets = []
-
-        while parameter_sets:
-            ps = parameter_sets.pop(0)
-
-            # check if the `if` condition is satisfied
-            assert "if" in spec
-            if _eval_condition(spec["if"], ps):
-                # if this is a fixed parameter, add it
-                if "fix" in spec:
-                    ps[name] = spec["fix"]
-                    new_parameter_sets.append(ps)
-                # if this is a varying parameter, add new values
-                elif "vary" in spec:
-                    # get the length of the
-                    ns = [len(values) for values in spec["vary"].values()]
-                    assert len(set(ns)) == 1, (
-                        f"Varying parameters in bundle {name} must have the same number of values"
-                    )
-                    n = ns[0]
-                    for i in range(n):
-                        this_ps = ps.copy()
-                        for vary_name, vary_values in spec["vary"].items():
-                            this_ps[vary_name] = vary_values[i]
-                        new_parameter_sets.append(this_ps)
-
-        parameter_sets = new_parameter_sets
-
-    return parameter_sets
-
-
-def _get_param_order(params: dict) -> List[str]:
-    """Get the order of parameters in the griddle, using the DAG of `if`s.
-
-    Args:
-        ps (dict): dictionary of name: specification
-
-    Returns:
-        List[str]: order of parameters
-    """
-    # create a directed graph from the `if`s
-    G = nx.DiGraph()
-    for name, spec in params.items():
-        G.add_node(name)
-
-        # if this parameter depends on other ones, add edges from
-        # those parameters to this one
-        assert "if" in spec
-        for cond_name in _condition_depends_on(spec["if"]):
-            G.add_edge(cond_name, name)
-
-    # confirm this graph is a DAG
-    if not nx.is_directed_acyclic_graph(G):
-        raise RuntimeError("The `if` conditions form a cycle.")
-
-    # get the topological sort of the graph
-    return list(nx.topological_sort(G))
-
-
-def _validate_parameter_names(params: dict) -> None:
-    """Check that there are no name collisions, especially with the varying
-    bundles.
-
-    Args:
-        params (dict): dictionary of name: specification
-    """
-    names = []
-    for name, spec in params.items():
+    @classmethod
+    def from_json(cls, name: str, spec: dict[str, Any]) -> "Param":
         if "fix" in spec:
-            assert name not in names, f"Duplicate parameter name: {name}"
-            names.append(name)
+            return FixParam(name=name, value=spec["fix"], if_=spec.get("if", True))
         elif "vary" in spec and isinstance(spec["vary"], dict):
-            # this is a canonical form bundle
-            for in_bundle_name in spec["vary"].keys():
-                assert in_bundle_name not in names, (
-                    f"Duplicate parameter name(s): {in_bundle_name}"
-                )
-                names.extend(in_bundle_name)
+            return Bundle(
+                name=name,
+                parameter_names=list(spec["vary"].keys()),
+                values=list(spec["vary"].values()),
+                if_=spec.get("if", True),
+            )
         elif "vary" in spec and isinstance(spec["vary"], list):
-            # this is a short-form bundle
-            assert name not in names, f"Duplicate parameter name: {name}"
-            names.append(name)
+            return Bundle(
+                # generate an ad hoc bundle name
+                name=str(uuid.uuid4()),
+                # put the parameter name inside the bundle
+                parameter_names=[name],
+                values=[spec["vary"]],
+                if_=spec.get("if", True),
+            )
         else:
             raise RuntimeError(f"Unknown parameter specification: {name}: {spec}")
 
+    def depends_on(self) -> List[str]:
+        """Get the names of parameters that this parameter depends on.
 
-def _to_canonical_form(params: dict[str, Any]) -> dict[str, Any]:
-    """Convert parameter specifications into canonical form, including:
-
-    - Ensure `if` conditions for all parameters & bundles
-    - Change single-variable varying into bundles
-
-    Args:
-        params (dict): parameter specifications
-
-    Returns:
-        dict: canonical form
-    """
-    out = {}
-
-    # convert short-forms to bundles
-    for name, spec in params.items():
-        if "vary" in spec and isinstance(spec["vary"], list):
-            # generate an ad hoc bundle name
-            bundle_name = str(uuid.uuid4())
-            out[bundle_name] = {"vary": {name: spec["vary"]}}
-
-            if "if" in spec:
-                out[bundle_name]["if"] = spec["if"]
+        Returns:
+            List[str]: names of parameters
+        """
+        if isinstance(self.if_, bool):
+            # if this is a boolean condition, return an empty list
+            return []
+        elif isinstance(self.if_, dict):
+            # we only support equals statements for now
+            assert len(self.if_) == 1
+            assert list(self.if_.keys()) == ["equals"]
+            assert isinstance(self.if_["equals"], dict)
+            assert len(self.if_["equals"]) == 1
+            return list(self.if_["equals"].keys())
         else:
-            out[name] = spec
+            raise RuntimeError(f"Unknown condition: {self.if_}")
 
-    # add `if` if absent
-    for name in out.keys():
-        if "if" not in out[name]:
-            out[name]["if"] = True
+    def eval_condition(self, param_set: dict[str, Any]) -> bool:
+        """Check if an `if` condition is satisfied.
 
-    return out
+        Args:
+            param_set (dict): parameter set
+
+        Returns:
+            bool: if the spec matches the set
+        """
+        if isinstance(self.if_, bool):
+            # if this is a boolean condition, return it
+            return self.if_
+        elif isinstance(self.if_, dict):
+            # we only support equals statements for now
+            assert list(self.if_.keys()) == ["equals"]
+            assert isinstance(self.if_["equals"], dict)
+            assert len(self.if_["equals"]) == 1
+            cond_name, cond_value = list(self.if_["equals"].items())[0]
+
+            return cond_name in param_set and param_set[cond_name] == cond_value
+        else:
+            raise RuntimeError(f"Unknown condition: {self.if_}")
+
+    def augment_parameter_set(
+        self, parameter_set: dict[str, Any]
+    ) -> Iterable[dict[str, Any]]:
+        """Add this parameter to a parameter set, potentially producing multiple
+        output parameter sets
+
+        Args:
+            param_set (dict): input parameter set
+
+        Returns:
+            Iterable[dict[str, Any]]: one or more output updated parameter sets
+        """
+        raise NotImplementedError
 
 
-def _condition_depends_on(cond: dict) -> List[str]:
-    """Get the names of parameters that this condition depends on.
+class FixParam(Param):
+    def __init__(self, name: str, value: Any, if_: bool | dict):
+        self.name = name
+        self.value = value
+        self.if_ = if_
 
-    Args:
-        cond (dict): condition
-
-    Returns:
-        List[str]: names of parameters
-    """
-    if isinstance(cond, bool):
-        # if this is a boolean condition, return an empty list
-        return []
-    elif isinstance(cond, dict):
-        # we only support equals statements for now
-        assert len(cond) == 1
-        assert list(cond.keys()) == ["equals"]
-        assert isinstance(cond["equals"], dict)
-        assert len(cond["equals"]) == 1
-        return list(cond["equals"].keys())
-    else:
-        raise RuntimeError(f"Unknown condition: {cond}")
+    def augment_parameter_set(
+        self, parameter_set: dict[str, Any]
+    ) -> Iterable[dict[str, Any]]:
+        # just add this fixed value
+        assert self.name not in parameter_set
+        parameter_set[self.name] = self.value
+        return [parameter_set]
 
 
-def _eval_condition(cond: bool | dict, param_set: dict[str, Any]) -> bool:
-    """Check if an `if` condition is satisfied.
+class Bundle(Param):
+    def __init__(
+        self,
+        name: str,
+        parameter_names: List[str],
+        values: List[List],
+        if_: bool | dict,
+    ):
+        self.name = name
+        self.parameter_names = parameter_names
+        self.values = values
+        self.if_ = if_
 
-    Args:
-        cond (bool | dict): if condition
-        param_set (dict): parameter set
+        # check that all values have the same length
+        n = [len(v) for v in values]
+        assert len(set(n)) == 1, (
+            f"Varying parameters in bundle {name} must have the same number of values"
+        )
+        self.n = n[0]
 
-    Returns:
-        bool: if the spec matches the set
-    """
-    if isinstance(cond, bool):
-        # if this is a boolean condition, return it
-        return cond
-    elif isinstance(cond, dict):
-        # we only support equals statements for now
-        assert list(cond.keys()) == ["equals"]
-        assert isinstance(cond["equals"], dict)
-        assert len(cond["equals"]) == 1
-        cond_name, cond_value = list(cond["equals"].items())[0]
+    def augment_parameter_set(
+        self, parameter_set: dict[str, Any]
+    ) -> Iterable[dict[str, Any]]:
+        out = [parameter_set.copy() for _ in range(self.n)]
+        for i in range(self.n):
+            for name, value in zip(self.parameter_names, self.values):
+                out[i][name] = value[i]
 
-        return cond_name in param_set and param_set[cond_name] == cond_value
+        return out
+
+
+class Griddle:
+    def __init__(self, griddle: dict):
+        self.griddle = griddle
+
+        # do syntactic validation
+        jsonschema.validate(instance=self.griddle, schema=self.load_schema())
+        # check for version
+        assert self.griddle["version"] == "v0.3", "Only v0.3 griddles are supported"
+
+    def parse(self) -> List[dict]:
+        """Convert a griddle into a list of parameter sets.
+
+        Args:
+            griddle (dict): griddle
+
+        Returns:
+            List[dict]: list of parameter sets
+        """
+        # extract the parameters section of the griddle
+        params = self.griddle["parameters"]
+        assert isinstance(params, dict)
+
+        return self._parse_params(params)
+
+    @classmethod
+    def _parse_params(cls, params_dict: dict[str, Any]) -> List[dict]:
+        """Parse the parameters section of the griddle"""
+        # parse the parameters into objects
+        params = {
+            name: Param.from_json(name, spec) for name, spec in params_dict.items()
+        }
+
+        # check that no parameter names are repeated
+        cls._validate_parameter_names(params.values())
+
+        # determine the order in which we'll add parameters to the parameter sets
+        param_order = cls._get_param_order(params.values())
+
+        # initialize the output parameter sets
+        parameter_sets = [{}]
+
+        for name in param_order:
+            # get the param objects in DAG-relevant order
+            param = params[name]
+
+            new_parameter_sets = []
+
+            while parameter_sets:
+                ps = parameter_sets.pop(0)
+
+                # check if the `if` condition is satisfied
+                if param.eval_condition(ps):
+                    # get the updated (& potentially multiplied) parameter sets
+                    augmented_sets = param.augment_parameter_set(ps)
+                    # add the new parameter sets to the list
+                    new_parameter_sets.extend(augmented_sets)
+
+            parameter_sets = new_parameter_sets
+
+        return parameter_sets
+
+    @classmethod
+    def _get_param_order(cls, params: Iterable[Param]) -> List[str]:
+        """Get the order of parameters in the griddle, using the DAG of `if`s.
+
+        Args:
+            params (List[Param]): list of parameter objects
+
+        Returns:
+            List[str]: order of parameters (by name)
+        """
+        # make a mapping from parameter name to parameter/bundle name/ID
+        name_map = {}
+
+        for param in params:
+            if isinstance(param, FixParam):
+                # for fixed params, there is no ambiguity
+                name_map[param.name] = param.name
+            elif isinstance(param, Bundle):
+                # for bundles, point from the parameter names in the bundle to
+                # the bundle ID
+                for name in param.parameter_names:
+                    name_map[name] = param.name
+            else:
+                raise RuntimeError(f"Unknown parameter type: {type(param)}")
+
+        # create a directed graph from the `if`s
+        # nodes are the parameters/bundles
+        G = nx.DiGraph()
+        for param in params:
+            G.add_node(param.name)
+
+            # if this parameter depends on other ones, add edges from
+            # those parameters to this one
+            for cond_param_name in param.depends_on():
+                # get the parameter name from the name map
+                cond_obj_name = name_map[cond_param_name]
+                G.add_edge(cond_obj_name, param.name)
+
+        # confirm this graph is a DAG
+        if not nx.is_directed_acyclic_graph(G):
+            raise RuntimeError("The `if` conditions form a cycle.")
+
+        # get the topological sort of the graph
+        return list(nx.topological_sort(G))
+
+    @classmethod
+    def _validate_parameter_names(cls, params: Iterable[Param]) -> None:
+        """Check that there are no name collisions, especially with the varying
+        bundles.
+
+        Args:
+            params (List[Param]): list of parameter objects
+        """
+        names = []
+        for param in params:
+            if isinstance(param, FixParam):
+                assert param.name not in names, (
+                    f"Duplicate parameter name: {param.name}"
+                )
+                names.append(param.name)
+            elif isinstance(param, Bundle):
+                for name in param.parameter_names:
+                    assert name not in names, f"Duplicate parameter name: {name}"
+                    names.append(name)
+            else:
+                raise RuntimeError(f"Unknown parameter type: {type(param)}")
+
+    @staticmethod
+    def load_schema() -> dict:
+        with importlib.resources.open_text("griddler", "schema.json") as f:
+            schema = json.load(f)
+
+        return schema
+
+    @staticmethod
+    def from_yaml(path: str) -> "Griddle":
+        with open(path) as f:
+            griddle = yaml.safe_load(f)
+
+        return Griddle(griddle)
+
+    @staticmethod
+    def from_json(path: str) -> "Griddle":
+        with open(path) as f:
+            griddle = json.load(f)
+
+        return Griddle(griddle)

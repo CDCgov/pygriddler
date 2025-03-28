@@ -1,6 +1,6 @@
 import pytest
 
-import griddler.griddle
+from griddler.griddle import Griddle, Param
 
 
 # from griddler.griddle import _match_ps_nest, parse, read, read_to_json
@@ -14,43 +14,43 @@ def assert_list_setequal(a, b):
         assert x in a, f"{x} not in {a}"
 
 
+def params_from_json(params_dict):
+    """Convert a dictionary of parameters into a list of Param objects."""
+    return [Param.from_json(name, spec) for name, spec in params_dict.items()]
+
+
 class TestParamOrder:
     def test_fail_not_dag_minimal(self):
         params = {
-            "A": {"fix": "a", "if": {"B": "b"}},
-            "B": {"fix": "b", "if": {"A": "a"}},
+            "A": {"fix": "a", "if": {"equals": {"B": "b"}}},
+            "B": {"fix": "b", "if": {"equals": {"A": "a"}}},
         }
         with pytest.raises(RuntimeError, match="The `if` conditions form a cycle"):
-            griddler.griddle._get_param_order(params)
+            Griddle._get_param_order(params_from_json(params))
 
     def test_simple(self):
         # B depends on A, so A should come first
         params = {
             "A": {"fix": "a"},
-            "B": {"fix": "b", "if": {"A": "a"}},
+            "B": {"fix": "b", "if": {"equals": {"A": "a"}}},
         }
-        assert griddler.griddle._get_param_order(params) == ["A", "B"]
+        assert Griddle._get_param_order(params_from_json(params)) == ["A", "B"]
 
     def test_multiple(self):
         # B depends on A, so A should come first
         # C isn't part of the DAG, so it can come in any place
         params = {
             "A": {"fix": "a"},
-            "B": {"fix": "b", "if": {"A": "a"}},
+            "B": {"fix": "b", "if": {"equals": {"A": "a"}}},
             "C": {"fix": "c"},
         }
-        order = griddler.griddle._get_param_order(params)
+        order = Griddle._get_param_order(params_from_json(params))
 
         assert set(order) == {"A", "B", "C"}
         assert order.index("A") < order.index("B")
 
 
 class TestValidateNames:
-    def test_simple(self):
-        raise NotImplementedError
-
-
-class TestToCanonicalForm:
     def test_simple(self):
         raise NotImplementedError
 
@@ -68,27 +68,27 @@ class TestConditionDependsOn:
 class TestParse:
     def test_minimal(self):
         griddle = {"version": "v0.3", "parameters": {}}
-        parameter_sets = griddler.griddle.parse(griddle)
+        parameter_sets = Griddle(griddle).parse()
         assert parameter_sets == [{}]
 
     def test_fixed_only(self):
         griddle = {"version": "v0.3", "parameters": {"R0": {"fix": 1.5}}}
-        parameter_sets = griddler.griddle.parse(griddle)
+        parameter_sets = Griddle(griddle).parse()
         assert parameter_sets == [{"R0": 1.5}]
 
     def test_vary_one_canonical_one_value(self):
         params = {"my_bundle": {"vary": {"R0": [1.0]}}}
-        parameter_sets = griddler.griddle._parse_params(params)
+        parameter_sets = Griddle._parse_params(params)
         assert parameter_sets == [{"R0": 1.0}]
 
     def test_vary_one_canonical(self):
         params = {"my_bundle": {"vary": {"R0": [1.0, 2.0]}}}
-        parameter_sets = griddler.griddle._parse_params(params)
+        parameter_sets = Griddle._parse_params(params)
         assert_list_setequal(parameter_sets, [{"R0": 1.0}, {"R0": 2.0}])
 
     def test_vary_one_short(self):
         params = {"R0": {"vary": [1.0, 2.0]}}
-        parameter_sets = griddler.griddle._parse_params(params)
+        parameter_sets = Griddle._parse_params(params)
         assert_list_setequal(
             parameter_sets,
             [
@@ -99,7 +99,7 @@ class TestParse:
 
     def test_2x2_grid(self):
         params = {"R0": {"vary": [1.0, 2.0]}, "gamma": {"vary": [1.0, 2.0]}}
-        parameter_sets = griddler.griddle._parse_params(params)
+        parameter_sets = Griddle._parse_params(params)
         assert_list_setequal(
             parameter_sets,
             [
@@ -117,7 +117,7 @@ class TestParse:
                 "vary": {"scenario": ["bad", "good"], "gamma": [1.0, 2.0]}
             },
         }
-        parameter_sets = griddler.griddle._parse_params(params)
+        parameter_sets = Griddle._parse_params(params)
         assert_list_setequal(
             parameter_sets,
             [
@@ -131,7 +131,7 @@ class TestParse:
             "gamma": {"vary": [0.1, 0.2]},
             "scenario": {"vary": {"R0": [1.0, 2.0], "theta": [1.0, 2.0]}},
         }
-        parameter_sets = griddler.griddle._parse_params(params)
+        parameter_sets = Griddle._parse_params(params)
 
         expected = [
             {"gamma": 0.1, "R0": 1.0, "theta": 1.0},
@@ -144,12 +144,12 @@ class TestParse:
 
     def test_if_trivial(self):
         params = {"x": {"fix": "X", "if": True}}
-        parameter_sets = griddler.griddle._parse_params(params)
+        parameter_sets = Griddle._parse_params(params)
         assert parameter_sets == [{"x": "X"}]
 
     def test_if_simple(self):
         params = {"x": {"fix": "X"}, "y": {"fix": "Y", "if": {"equals": {"x": "X"}}}}
-        parameter_sets = griddler.griddle._parse_params(params)
+        parameter_sets = Griddle._parse_params(params)
         assert parameter_sets == [{"x": "X", "y": "Y"}]
 
     def test_subgrid(self):
@@ -165,7 +165,7 @@ class TestParse:
                 "vary": ["Virginia Beach", "Chincoteague", "Colonial Beach"],
             },
         }
-        parameter_sets = griddler.griddle._parse_params(params)
+        parameter_sets = Griddle._parse_params(params)
         print(parameter_sets)
         expected = [
             {
