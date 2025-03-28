@@ -166,28 +166,24 @@ class Griddle:
     def _parse_params(cls, params_dict: dict[str, Any]) -> List[dict]:
         """Parse the parameters section of the griddle"""
         # parse the parameters into objects
-        params = {
-            name: Param.from_json(name, spec) for name, spec in params_dict.items()
-        }
+        params = [Param.from_json(name, spec) for name, spec in params_dict.items()]
 
         # check that no parameter names are repeated
-        cls._validate_parameter_names(params.values())
+        cls._validate_parameter_names(params)
 
         # determine the order in which we'll add parameters to the parameter sets
-        param_order = cls._get_param_order(params.values())
+        param_order = cls._get_param_order(params)
 
         # initialize the output parameter sets
         parameter_sets = [{}]
 
-        for name in param_order:
-            # get the param objects in DAG-relevant order
-            param = params[name]
-
+        # go through the params in order
+        for param in sorted(params, key=lambda x: param_order.index(x.name)):
+            # each time, iterate over all the parameter sets, augmenting them
+            # to create a new list of parameter sets
             new_parameter_sets = []
 
-            while parameter_sets:
-                ps = parameter_sets.pop(0)
-
+            for ps in parameter_sets:
                 # check if the `if` condition is satisfied
                 if param.eval_condition(ps):
                     # get the updated (& potentially multiplied) parameter sets
