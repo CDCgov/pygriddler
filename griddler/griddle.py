@@ -1,7 +1,7 @@
 import importlib.resources
 import itertools
 import json
-from typing import List
+from typing import Any, List
 
 import jsonschema
 import networkx as nx
@@ -59,6 +59,34 @@ def parse(griddle: dict) -> List[dict]:
 
     # initialize the output parameter sets
     parameter_sets = [{}]
+
+    for name in param_order:
+        spec = params[name]
+
+        # if this is a fixed parameter, add it to all the parameter sets
+        if "fix" in spec:
+            # if this is a short-form bundle, just add the value
+            if isinstance(spec["fix"], list):
+                for i, val in enumerate(spec["fix"]):
+                    parameter_sets[i][name] = val
+            else:
+                for ps in parameter_sets:
+                    ps[name] = spec["fix"]
+
+        # if this is a varying bundle, create new parameter sets
+        elif "vary" in spec:
+            # get the varying parameters
+            varying_params = spec["vary"]
+
+            # create new parameter sets based on the varying parameters
+            new_parameter_sets = []
+            for ps in parameter_sets:
+                for var_name, var_values in varying_params.items():
+                    for val in var_values:
+                        new_ps = ps.copy()
+                        new_ps[var_name] = val
+                        new_parameter_sets.append(new_ps)
+            parameter_sets = new_parameter_sets
 
     # get all the varying bundles
     pass
@@ -133,7 +161,7 @@ def _validate_parameter_names(params: dict) -> None:
             raise RuntimeError(f"Unknown parameter specification: {name}: {spec}")
 
 
-def _to_canonical_form(name: str, spec: dict) -> dict:
+def _to_canonical_form(name: str, spec: dict[str, Any]) -> dict[str, Any]:
     """Convert a parameter specification into canonical form.
 
     Args:
@@ -149,3 +177,42 @@ def _to_canonical_form(name: str, spec: dict) -> dict:
 
     # otherwise, just return the original spec
     return spec
+
+
+def _spec_matches(spec: dict, param_set: dict[str, Any]) -> bool:
+    """Check if a parameter specification matches a parameter set.
+
+    Args:
+        spec (dict): parameter specification
+        param_set (dict): parameter set
+
+    Returns:
+        bool: if the spec matches the set
+    """
+    if "if" not in spec:
+        return True
+    elif "if" in spec:
+        for cond_name, cond_values in spec["if"].items():
+            if cond_name not in param_set:
+                return False
+            else:
+                pass
+                # for
+    # check if this is a fixed parameter
+    if "fix" in spec:
+        return spec["fix"] == value
+
+    # check if this is a varying bundle
+    elif "vary" in spec:
+        # if this is a canonical form bundle, check the values
+        if isinstance(spec["vary"], dict):
+            return all(
+                _spec_matches(spec["vary"][name], name, value)
+                for name, value in spec["vary"].items()
+            )
+        # if this is a short-form bundle, check the values
+        elif isinstance(spec["vary"], list):
+            return value in spec["vary"]
+
+    # otherwise, return False
+    return False

@@ -17,7 +17,7 @@
                         "properties": {
                             "fix": {},
                             "if": {
-                                "type": "object"
+                                "$ref": "#/$defs/if_condition"
                             },
                             "comment": {}
                         },
@@ -36,7 +36,7 @@
                                 }
                             },
                             "if": {
-                                "type": "object"
+                                "$ref": "#/$defs/if_condition"
                             },
                             "comment": {}
                         },
@@ -52,7 +52,7 @@
                                 "type": "array"
                             },
                             "if": {
-                                "type": "object"
+                                "$ref": "#/$defs/if_condition"
                             },
                             "comment": {}
                         },
@@ -69,5 +69,18 @@
         "version",
         "parameters"
     ],
-    "additionalProperties": false
+    "additionalProperties": false,
+    "$defs": {
+        "if_condition": {
+            "type": "object",
+            "properties": {
+                "equals": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "maxProperties": 1
+                }
+            },
+            "additionalProperties": false
+        }
+    }
 }

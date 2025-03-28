@@ -82,12 +82,7 @@ def test_vary_one_short():
 
 def test_conditioned_fixed():
     """Conditioned fixed parameter"""
-    validate_parameters({"R0": {"fix": 1.0, "if": {"gamma": 2.0}}})
-
-
-def test_conditioned_fixed_multiple_conditions():
-    """Conditioned fixed parameter with multiple conditions"""
-    validate_parameters({"R0": {"fix": 1.0, "if": {"gamma": 2.0, "beta": 3.0}}})
+    validate_parameters({"R0": {"fix": 1.0, "if": {"equals": {"gamma": 2.0}}}})
 
 
 def test_conditioned_vary():
@@ -96,7 +91,7 @@ def test_conditioned_vary():
         {
             "my_bundle": {
                 "vary": {"R0": [1.0, 2.0], "gamma": [2.0, 3.0]},
-                "if": {"R0": 1.0},
+                "if": {"equals": {"R0": 1.0}},
             }
         }
     )
@@ -104,7 +99,7 @@ def test_conditioned_vary():
 
 def test_conditioned_vary_short():
     """Conditioned varying bundle, with one parameter in short form"""
-    validate_parameters({"R0": {"vary": [1.0, 2.0], "if": {"gamma": 2.0}}})
+    validate_parameters({"R0": {"vary": [1.0, 2.0], "if": {"equals": {"gamma": 2.0}}}})
 
 
 def test_fixed_comment():
