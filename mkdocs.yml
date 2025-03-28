@@ -16,6 +16,7 @@ plugins:
             show_root_heading: true
             show_full_root_path: true
   - search
+  - autorefs
 
 markdown_extensions:
   - pymdownx.highlight:
@@ -33,6 +34,7 @@ markdown_extensions:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
+  - admonition
 
 extra_javascript:
   - javascript/katex.js
