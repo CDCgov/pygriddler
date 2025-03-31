@@ -7,5 +7,5 @@ See the the [API reference](reference.md) for specifics on griddler's internals.
 Griddler can also be used on the command line to read an input YAML and write output JSON:
 
 ```
-griddler parse my_griddle.yaml my_parameter_sets.json
+python -m griddler parse my_griddle.yaml my_parameter_sets.json
 ```
