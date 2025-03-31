@@ -91,6 +91,26 @@ which produces 4 parameter sets:
 ]
 ```
 
+### Griddle template
+
+```yaml
+version: v0.3
+parameters:
+  # fixed parameter
+  NAME1: {fix: VALUE}
+  # single varying parameter
+  NAME2: {vary: [VALUE, VALUE]}
+  # varying bundle
+  BUNDLE:
+    NAME3: [VALUE, VALUE]
+    NAME4: [VALUE, VALUE]
+  # conditions and comments
+  NAME5:
+    fix: VALUE
+    if: {equals: {NAME: VALUE}}
+    comment: COMMENT
+```
+
 ## Docs
 
 See the [GitHub pages documentation](https://cdcgov.github.io/pygriddler/) for more detail. Source documentation is under `docs/`.
