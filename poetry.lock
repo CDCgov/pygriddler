@@ -686,70 +686,6 @@ dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
-name = "polars"
-version = "1.26.0"
-description = "Blazingly fast DataFrame library"
-optional = true
-python-versions = ">=3.9"
-groups = ["main"]
-markers = "extra == \"polars\""
-files = [
-    {file = "polars-1.26.0-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:2afefcd356608981b2e15d46df9ddaa6e77f36095ebeb73c3261e198bd51c925"},
-    {file = "polars-1.26.0-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:587eb3c5000423eb20be998f523e605ddba0d3c598ba4a7e2a4d0b92b1fd2a7e"},
-    {file = "polars-1.26.0-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:66c30f4b7e060c2e7f3a45d6ac94ab3b179831a2f1e629401bf7912d54311529"},
-    {file = "polars-1.26.0-cp39-abi3-manylinux_2_24_aarch64.whl", hash = "sha256:110d6987d37ae954a5ef16d739fb717df9d39b144790d12d98fb3e72ed35621c"},
-    {file = "polars-1.26.0-cp39-abi3-win_amd64.whl", hash = "sha256:189a58aaf393003515fa6d83e2dea815a2b448265f2007a926274ed12672583c"},
-    {file = "polars-1.26.0-cp39-abi3-win_arm64.whl", hash = "sha256:58db2dce39cad5f8fc8e8c5c923a250eb21eff4146b03514d570d1c205a4874c"},
-    {file = "polars-1.26.0.tar.gz", hash = "sha256:b5492d38e5ec2ae6a8853833c5a31549194a361b901134fc5f2f57b49bd563ea"},
-]
-
-[package.extras]
-adbc = ["adbc-driver-manager[dbapi]", "adbc-driver-sqlite[dbapi]"]
-all = ["polars[async,cloudpickle,database,deltalake,excel,fsspec,graph,iceberg,numpy,pandas,plot,pyarrow,pydantic,style,timezone]"]
-async = ["gevent"]
-calamine = ["fastexcel (>=0.9)"]
-cloudpickle = ["cloudpickle"]
-connectorx = ["connectorx (>=0.3.2)"]
-database = ["polars[adbc,connectorx,sqlalchemy]"]
-deltalake = ["deltalake (>=0.19.0)"]
-excel = ["polars[calamine,openpyxl,xlsx2csv,xlsxwriter]"]
-fsspec = ["fsspec"]
-gpu = ["cudf-polars-cu12"]
-graph = ["matplotlib"]
-iceberg = ["pyiceberg (>=0.7.1)"]
-numpy = ["numpy (>=1.16.0)"]
-openpyxl = ["openpyxl (>=3.0.0)"]
-pandas = ["pandas", "polars[pyarrow]"]
-plot = ["altair (>=5.4.0)"]
-polars-cloud = ["polars-cloud (>=0.0.1a1)"]
-pyarrow = ["pyarrow (>=7.0.0)"]
-pydantic = ["pydantic"]
-sqlalchemy = ["polars[pandas]", "sqlalchemy"]
-style = ["great-tables (>=0.8.0)"]
-timezone = ["tzdata ; platform_system == \"Windows\""]
-xlsx2csv = ["xlsx2csv (>=0.8.0)"]
-xlsxwriter = ["xlsxwriter"]
-
-[[package]]
-name = "progressbar2"
-version = "4.5.0"
-description = "A Python Progressbar library to provide visual (yet text based) progress to long running operations."
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "progressbar2-4.5.0-py3-none-any.whl", hash = "sha256:625c94a54e63915b3959355e6d4aacd63a00219e5f3e2b12181b76867bf6f628"},
-    {file = "progressbar2-4.5.0.tar.gz", hash = "sha256:6662cb624886ed31eb94daf61e27583b5144ebc7383a17bae076f8f4f59088fb"},
-]
-
-[package.dependencies]
-python-utils = ">=3.8.1"
-
-[package.extras]
-docs = ["sphinx (>=1.8.5)", "sphinx-autodoc-typehints (>=1.6.0)"]
-tests = ["dill (>=0.3.6)", "flake8 (>=3.7.7)", "freezegun (>=0.3.11)", "pytest (>=4.6.9)", "pytest-cov (>=2.6.1)", "pytest-mypy", "pywin32 ; sys_platform == \"win32\"", "sphinx (>=1.8.5)"]
-
-[[package]]
 name = "pygments"
 version = "2.19.1"
 description = "Pygments is a syntax highlighting package written in Python."
@@ -820,26 +756,6 @@ files = [
 
 [package.dependencies]
 six = ">=1.5"
-
-[[package]]
-name = "python-utils"
-version = "3.9.1"
-description = "Python Utils is a module with some convenient utilities not included with the standard Python install"
-optional = false
-python-versions = ">=3.9.0"
-groups = ["main"]
-files = [
-    {file = "python_utils-3.9.1-py2.py3-none-any.whl", hash = "sha256:0273d7363c7ad4b70999b2791d5ba6b55333d6f7a4e4c8b6b39fb82b5fab4613"},
-    {file = "python_utils-3.9.1.tar.gz", hash = "sha256:eb574b4292415eb230f094cbf50ab5ef36e3579b8f09e9f2ba74af70891449a0"},
-]
-
-[package.dependencies]
-typing_extensions = ">3.10.0.2"
-
-[package.extras]
-docs = ["mock", "python-utils", "sphinx"]
-loguru = ["loguru"]
-tests = ["blessings", "loguru", "loguru-mypy", "mypy-ipython", "pyright", "pytest", "pytest-asyncio", "pytest-cov", "pytest-mypy", "ruff", "sphinx", "types-setuptools"]
 
 [[package]]
 name = "pyyaml"
@@ -1144,6 +1060,7 @@ description = "Backported and Experimental Type Hints for Python 3.8+"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
+markers = "python_version < \"3.13\""
 files = [
     {file = "typing_extensions-4.13.0-py3-none-any.whl", hash = "sha256:c8dd92cc0d6425a97c18fbb9d1954e5ff92c1ca881a309c45f06ebc0b79058e5"},
     {file = "typing_extensions-4.13.0.tar.gz", hash = "sha256:0a4ac55a5820789d87e297727d229866c9650f6521b64206413c4fbada24d95b"},
@@ -1216,4 +1133,4 @@ polars = ["polars"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "503137e430b08c8918e52673257430fe3f1a1825424d15d2043b265cd8d956d0"
+content-hash = "b06126dbeda357038e45d90f7a712b91310b65ed6c5257a6374d9398f3b3cccc"

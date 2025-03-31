@@ -82,7 +82,7 @@ parameters:
 
 with the caveat that `BUNDLE_NAME` and `NAME` cannot be the same.
 
-### Conditioned parameters
+## Conditioned parameters
 
 A *conditioned* parameter will only be present in a parameter set when some one or more other parameters are present and take on some particular values. A the value associated with the `if` keyword is a *condition* that evaluates to true or false.
 
@@ -161,21 +161,6 @@ This produces 4 parameter sets:
 ```
 
 Note that the ordering of the outputs is not guaranteed.
-
-### Replicate runs
-
-If you want to run many replicates of each of those parameter sets, specify `seed` and `n_replicates`:
-
-```yaml
-parameters:
-  seed: {fix: 42}
-  n_replicates: {fix: 100}
-  p_infected_initial: {fix: 0.001}
-  R0: {vary: [2.0, 3.0]}
-  infectious_period: {vary: [0.5, 2.0]}
-```
-
-This will still produce 4 parameter sets. It will be up to your wrapped simulation function to know how to run all the replicates. The `replicated()` function in this package is designed for that.
 
 ### Varying parameter bundles
 
