@@ -7,13 +7,14 @@ import yaml
 import griddler
 
 
-def run():
+def main(args):
     parser = argparse.ArgumentParser(
         prog="pythom -m griddler", description="Parse a griddle into parameter sets."
     )
 
     parser.add_argument(
         "--from",
+        "-f",
         nargs="?",
         default="yaml",
         choices=["json", "yaml"],
@@ -23,6 +24,7 @@ def run():
     )
     parser.add_argument(
         "--to",
+        "-t",
         nargs="?",
         default="json",
         choices=["json", "yaml"],
@@ -31,6 +33,7 @@ def run():
     )
     parser.add_argument(
         "--output",
+        "-o",
         nargs="?",
         type=argparse.FileType("w"),
         default=sys.stdout,
@@ -46,7 +49,7 @@ def run():
         help="input griddle (default: stdin)",
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     if args.from_ == "yaml":
         raw = yaml.safe_load(args.input)
@@ -67,4 +70,4 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    main(args=None)
