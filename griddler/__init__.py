@@ -55,11 +55,11 @@ class Param:
         else:
             raise RuntimeError(f"Unknown condition: {self.if_}")
 
-    def eval_condition(self, param_set: dict[str, Any]) -> bool:
+    def eval_condition(self, parameter_set: dict[str, Any]) -> bool:
         """Check if an `if` condition is satisfied.
 
         Args:
-            param_set (dict): parameter set
+            parameter_set (dict): parameter set
 
         Returns:
             bool: if the spec matches the set
@@ -74,7 +74,7 @@ class Param:
             assert len(self.if_["equals"]) == 1
             cond_name, cond_value = list(self.if_["equals"].items())[0]
 
-            return cond_name in param_set and param_set[cond_name] == cond_value
+            return cond_name in parameter_set and parameter_set[cond_name] == cond_value
         else:
             raise RuntimeError(f"Unknown condition: {self.if_}")
 
@@ -85,7 +85,7 @@ class Param:
         output parameter sets
 
         Args:
-            param_set (dict): input parameter set
+            parameter_set (dict): input parameter set
 
         Returns:
             Iterable[dict[str, Any]]: one or more output updated parameter sets
@@ -141,6 +141,11 @@ class Bundle(Param):
 
 class Griddle:
     def __init__(self, griddle: dict):
+        """Create a parameter griddle
+
+        Args:
+            griddle (dict): griddle specification
+        """
         self.griddle = griddle
 
         # do syntactic validation
@@ -149,10 +154,7 @@ class Griddle:
         assert self.griddle["version"] == "v0.3", "Only v0.3 griddles are supported"
 
     def parse(self) -> List[dict]:
-        """Convert a griddle into a list of parameter sets.
-
-        Args:
-            griddle (dict): griddle
+        """Convert this griddle into a list of parameter sets.
 
         Returns:
             List[dict]: list of parameter sets
