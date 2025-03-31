@@ -1127,10 +1127,7 @@ files = [
 [package.extras]
 watchmedo = ["PyYAML (>=3.10)"]
 
-[extras]
-polars = ["polars"]
-
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "b06126dbeda357038e45d90f7a712b91310b65ed6c5257a6374d9398f3b3cccc"
+content-hash = "8102b08e033fc3b8c99c0eaaee1b2074914431533c089c4294941dc1725c74d2"
