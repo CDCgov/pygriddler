@@ -25,6 +25,3 @@ polars = ["polars"]
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-griddler = "griddler.console:run"

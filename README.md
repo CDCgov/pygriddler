@@ -1,8 +1,10 @@
 # Griddler: making grids of parameters
 
-Griddler is a tool for converting human-written simulation experiment parameterizations into sets of machine-readable parameter sets.
+Griddler is a tool for converting human-written simulation experiment parameterizations, called "griddles," into sets of machine-readable parameter sets.
 
-In this trivial example:
+## Griddles
+
+Griddles have a specific syntax. In this trivial example:
 
 ```yaml
 version: v0.3
@@ -102,7 +104,27 @@ parameters:
     comment: COMMENT
 ```
 
-## Docs
+## Getting started
+
+Use griddler from the command line:
+
+```bash
+python -m griddler my_griddle.yaml > parameter_sets.json
+```
+
+Or, from within Python:
+
+```python
+import yaml
+
+import griddler
+
+with open("my_griddle.yaml") as f:
+    raw_griddle = yaml.safe_load(f)
+
+griddle = griddler.Griddle(raw_griddle)
+parameter_sets = griddle.parse()
+```
 
 See the [GitHub pages documentation](https://cdcgov.github.io/pygriddler/) for more detail. Source documentation is under `docs/`.
 
@@ -112,7 +134,7 @@ Scott Olesen <ulp7@cdc.gov> (CDC/IOD/ORR/CFA)
 
 ## Changelog
 
-- v0.2.0: Add support for dictionary-of-dictionary parameters
+See the [repo releases](https://github.com/CDCgov/pygriddler/releases).
 
 ---
 

@@ -5,15 +5,21 @@ from typing import Any, Iterable, List, Set
 
 import jsonschema
 import networkx as nx
-import yaml
 
 
 class Param:
+    """Base class for parameters in a griddle."""
+
+    """Parameter name"""
     name: str
+    """Parameter condition"""
     if_: bool | dict
 
     @classmethod
     def from_json(cls, name: str, spec: dict[str, Any]) -> "Param":
+        """Read a Param object from the JSON specification.
+
+        The `spec` is value associated with a parameter name keyword in a griddle."""
         if "fix" in spec:
             return FixParam(name=name, value=spec["fix"], if_=spec.get("if", True))
         elif "vary" in spec and isinstance(spec["vary"], dict):
@@ -94,6 +100,8 @@ class Param:
 
 
 class FixParam(Param):
+    """A fixed parameter in a griddle."""
+
     def __init__(self, name: str, value: Any, if_: bool | dict):
         self.name = name
         self.value = value
@@ -109,6 +117,8 @@ class FixParam(Param):
 
 
 class Bundle(Param):
+    """A varying bundle of parameters in a griddle."""
+
     def __init__(
         self,
         name: str,
@@ -271,21 +281,12 @@ class Griddle:
 
     @staticmethod
     def load_schema() -> dict:
+        """Load the griddle schema from the package directory.
+
+        Returns:
+            dict: schema
+        """
         with importlib.resources.open_text("griddler", "schema.json") as f:
             schema = json.load(f)
 
         return schema
-
-    @staticmethod
-    def from_yaml(path: str) -> "Griddle":
-        with open(path) as f:
-            griddle = yaml.safe_load(f)
-
-        return Griddle(griddle)
-
-    @staticmethod
-    def from_json(path: str) -> "Griddle":
-        with open(path) as f:
-            griddle = json.load(f)
-
-        return Griddle(griddle)
