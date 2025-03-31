@@ -5,6 +5,9 @@ nav:
   - griddle.md
   - reference.md
 
+repo_url: https://github.com/cdcgov/pygriddler
+repo_name: repo
+
 theme:
   name: "material"
 
