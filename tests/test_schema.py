@@ -2,9 +2,9 @@ import jsonschema
 import jsonschema.exceptions
 import pytest
 
-import griddler.griddle
+import griddler
 
-schema = griddler.griddle.Griddle.load_schema()
+schema = griddler.Griddle.load_schema()
 
 
 def validate_griddle(x: dict) -> None:

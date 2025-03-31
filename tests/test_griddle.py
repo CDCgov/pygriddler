@@ -1,9 +1,8 @@
 import pytest
 
-from griddler.griddle import FixParam, Griddle, Param
+from griddler import FixParam, Griddle, Param
 
 
-# from griddler.griddle import _match_ps_nest, parse, read, read_to_json
 def assert_list_setequal(a, b):
     """Assert that two lists have the same items, potentially in different order."""
     assert len(a) == len(b)

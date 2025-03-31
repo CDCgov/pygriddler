@@ -1,14 +1,5 @@
 # Griddler: making grids of parameters
 
-This package is an opinionated tool for managing inputs to simulations or other analytical functions. This package includes functionality for:
-
-- Parameter sets: an extension of `dict` that does some extra validation and can produce stable hashes.
-- Griddles: a YAML-based format for specifying grid-like lists of parameter sets.
-- Running a function over multiple parameter sets, and "squashing" the results into a single [polars DataFrame](https://docs.pola.rs/py-polars/html/reference/dataframe/index.html).
-- Running a simulation function over multiple replicates with specified seeds.
-
-## Griddles
-
 Griddler is a tool for converting human-written simulation experiment parameterizations into sets of machine-readable parameter sets.
 
 In this trivial example:

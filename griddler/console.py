@@ -1,9 +1,10 @@
 import argparse
+import json
 import sys
 
 import yaml
 
-import griddler.griddle
+import griddler
 
 
 def run():
@@ -17,22 +18,23 @@ def run():
         nargs="?",
         type=argparse.FileType("r"),
         default=sys.stdin,
-        help="input griddle",
+        help="input griddle YAML (default: stdin)",
     )
     parser_parse.add_argument(
         "output",
         nargs="?",
         type=argparse.FileType("w"),
         default=sys.stdout,
-        help="output parameter sets yaml",
+        help="output parameter sets JSON (default: stdout)",
     )
 
     args = parser.parse_args()
 
     if args.command == "parse":
         raw = yaml.safe_load(args.input)
-        parameter_sets = griddler.griddle.parse(raw)
-        yaml.dump(parameter_sets, args.output)
+        griddle = griddler.Griddle(raw)
+        parameter_sets = griddle.parse()
+        json.dump(parameter_sets, args.output, indent=2)
     else:
         raise RuntimeError
 
