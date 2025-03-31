@@ -1,8 +1,8 @@
 # griddler
 
-Griddles are the main functionality of griddle. [Read the docs](griddle.md) about the griddle syntax.
+Griddles are the main functionality of griddle. Read about the [griddle schema](griddle.md) to get started.
 
-See the the [API reference](reference.md) for specifics on how to implement them.
+See the the [API reference](reference.md) for specifics on griddler's internals.
 
 ## Command line functionality
 
