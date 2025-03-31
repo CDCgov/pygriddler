@@ -8,35 +8,62 @@ import griddler
 
 
 def run():
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(title="subcommands", required=True)
+    parser = argparse.ArgumentParser(
+        prog="pythom -m griddler", description="Parse a griddle into parameter sets."
+    )
 
-    parser_parse = subparsers.add_parser("parse", help="parse a griddle")
-    parser_parse.set_defaults(command="parse")
-    parser_parse.add_argument(
+    parser.add_argument(
+        "--from",
+        nargs="?",
+        default="yaml",
+        choices=["json", "yaml"],
+        metavar="FORMAT",
+        dest="from_",  # to avoid collision with reserved word "from"
+        help="input format (json|yaml; default: yaml)",
+    )
+    parser.add_argument(
+        "--to",
+        nargs="?",
+        default="json",
+        choices=["json", "yaml"],
+        metavar="FORMAT",
+        help="output format (json|yaml; default: json)",
+    )
+    parser.add_argument(
+        "--output",
+        nargs="?",
+        type=argparse.FileType("w"),
+        default=sys.stdout,
+        metavar="OUTPUT",
+        help="output parameter sets file (default: stdout)",
+    )
+    parser.add_argument(
         "input",
         nargs="?",
         type=argparse.FileType("r"),
         default=sys.stdin,
-        help="input griddle YAML (default: stdin)",
-    )
-    parser_parse.add_argument(
-        "output",
-        nargs="?",
-        type=argparse.FileType("w"),
-        default=sys.stdout,
-        help="output parameter sets JSON (default: stdout)",
+        metavar="INPUT",
+        help="input griddle (default: stdin)",
     )
 
     args = parser.parse_args()
 
-    if args.command == "parse":
+    if args.from_ == "yaml":
         raw = yaml.safe_load(args.input)
-        griddle = griddler.Griddle(raw)
-        parameter_sets = griddle.parse()
+    elif args.from_ == "json":
+        raw = json.load(args.input)
+    else:
+        raise RuntimeError(f"Invalid input format {args.from_}")
+
+    griddle = griddler.Griddle(raw)
+    parameter_sets = griddle.parse()
+
+    if args.to == "yaml":
+        yaml.dump(parameter_sets, args.output)
+    elif args.to == "json":
         json.dump(parameter_sets, args.output, indent=2)
     else:
-        raise RuntimeError
+        raise RuntimeError(f"Invalid output format {args.to}")
 
 
 if __name__ == "__main__":
