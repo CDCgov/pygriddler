@@ -1,9 +1,5 @@
 # griddler
 
-- Source: <https://github.com/CDCgov/pygriddler/>
-- Issues: <https://github.com/CDCgov/pygriddler/issues>
-- Documentation: <https://cdcgov.github.io/pygriddler/>
-
 ## Griddles
 
 A _griddle_ is an intuitive file format for specifying lists of parameter sets. The syntax is inspired by the ["matrix" strategy](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix) in GitHub Workflow files.
