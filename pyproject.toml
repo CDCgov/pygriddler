@@ -10,6 +10,8 @@ python = "^3.10"
 pyyaml = "^6.0.1"
 polars = {version = "^1.7.1", optional = true}
 progressbar2 = "^4.5.0"
+jsonschema = "^4.23.0"
+networkx = "^3.4.2"
 
 [tool.poetry.group.dev.dependencies]
 mkdocs = "^1.6.0"
