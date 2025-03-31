@@ -4,6 +4,8 @@ Griddles are the main functionality of griddle. Read about the [griddle schema](
 
 See the the [API reference](reference.md) for specifics on griddler's internals.
 
-## Command line functionality
+Griddler can also be used on the command line to read an input YAML and write output JSON:
 
-TBD
+```
+griddler parse my_griddle.yaml my_parameter_sets.json
+```
