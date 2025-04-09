@@ -1,33 +1,42 @@
 # Griddler: making grids of parameters
 
-Griddler is a tool for converting human-written simulation experiment parameterizations, called "griddles," into sets of machine-readable parameter sets.
+Griddler is a tool for converting _griddles_, which are human-written files for specifying simulation experiments, into lists of machine-readable parameter specifications.
+
+An _experiment_ is a set (or list, with the understanding that the order is not guaranteed) of _parameter specifications_. A parameter specification is a set of parameter name-value pairs (e.g., implemented as a JSON object or a Python dictionary.)
 
 ## Griddles
 
-Griddles have a specific syntax. In this trivial example:
+A griddle, typically written in YAML, consists of some metadata and an _experiment specification_. The experiment specification can be the experiment itself, that is, the list of parameter specs. Thus, the trivial example is:
 
 ```yaml
 version: v0.3
-parameters:
-  R0: { fix: 1.0 }
+experiment: []
 ```
 
-We get a single output parameter set:
+This returns an empty list `[]` of parameter specifications. The minimal example, of a single, fixed parameter is:
+
+```yaml
+version: v0.3
+experiment: [{ R0: 1.0 }]
+```
+
+We get a single output parameter set, serialized as JSON:
 
 ```json
 [{ "R0": 1.0 }]
 ```
 
-Griddler supports **varying multiple parameters** over a grid:
+The power of griddler is in taking _products_ and _unions_ over experiments. The product of two experiments is the Cartesian product of their constitutent parameter specs. For example:
 
 ```yaml
 version: v0.3
-parameters:
-  R0: { vary: [1.5, 2.0] }
-  gamma: { vary: [0.3, 0.4] }
+experiment:
+  product:
+    - [{ R0: 1.5 }, { R0: 2.0 }]
+    - [{ gamma: 0.3 }, { gamma: 0.4 }]
 ```
 
-produces 4 output parameter sets, with all combinations of input varying parameters:
+which produces 4 output parameter sets, with all combinations of input varying parameters:
 
 ```json
 [
@@ -38,69 +47,52 @@ produces 4 output parameter sets, with all combinations of input varying paramet
 ]
 ```
 
-Griddler supports **bundles of parameters that vary together** (e.g., to produce scenarios):
+Unions become useful when combining experiments that vary different parameters. For example, an experiment might consist of some simulations where a simulated quantity follows the normal distribution and other simulations where it follows the gamma distribution. For the normal distribution simulations, we might want to grid over values of the mean and standard deviation, while in the gamma distribution simulations, we want to grid over shape and scale parameters:
 
 ```yaml
 version: v0.3
-parameters:
-  scenario:
-    vary:
-      R0: [low, high]
-      gamma: [low, high]
+experiment:
+  product:
+    - [{ R0: 1.5 }]
+    - union:
+        - product:
+            - [{ distribution: normal }]
+            - [{ mean: 0.5 }, { mean: 1.0 }, { mean: 1.5 }]
+            - [{ sd: 0.5 }, { sd: 1.0 }]
+        - product:
+            - [{ distribution: gamma }]
+            - [{ shape: 0.5 }, { shape: 1.0 }]
+            - [{ scale: 0.5 }, { scale: 1.0 }]
 ```
 
-produces only 2 outputs:
+which produces multiple parameter sets:
 
 ```json
 [
-  { "R0": "low", "gamma": "low" },
-  { "R0": "high", "gamma": "high" }
+  { "R0": 1.5, "distribution": "normal", "mean": 0.5, "sd": 0.5 },
+  { "R0": 1.5, "distribution": "normal", "mean": 0.5, "sd": 1.0 },
+  { "R0": 1.5, "distribution": "normal", "mean": 1.0, "sd": 0.5 },
+  // etc. with further mean/sd combinations
+  { "R0": 1.5, "distribution": "gamma", "shape": 0.5, "scale": 0.5 }
+  // etc. with further shape/scale combinations
 ]
 ```
 
-Griddle **conditional parameters**, allowing for subgridding:
+### Syntax summary
+
+The griddle has syntax:
 
 ```yaml
 version: v0.3
-parameters:
-  method: { vary: [newton, brent] }
-  start_point:
-    if: { equals: { method: newton } }
-    vary: [0.25, 0.50, 0.75]
-  bounds:
-    if: { equals: { method: brent } }
-    fix: [0.0, 1.0]
+experiment: <experiment-spec>
 ```
 
-which produces 4 parameter sets:
+where the experiment specification has syntax:
 
-```json
-[
-  { "method": "newton", "start_point": 0.25 },
-  { "method": "newton", "start_point": 0.5 },
-  { "method": "newton", "start_point": 0.75 },
-  { "method": "brent", "bounds": [0.0, 1.0] }
-]
-```
-
-### Griddle template
-
-```yaml
-version: v0.3
-parameters:
-  # fixed parameter
-  NAME1: { fix: VALUE }
-  # single varying parameter
-  NAME2: { vary: [VALUE, VALUE] }
-  # varying bundle
-  BUNDLE:
-    NAME3: [VALUE, VALUE]
-    NAME4: [VALUE, VALUE]
-  # conditions and comments
-  NAME5:
-    fix: VALUE
-    if: { equals: { NAME: VALUE } }
-    comment: COMMENT
+```text
+<experiment-spec> ::= [<parameter-spec>, ...]
+                       | {"union": [<experiment-spec>, ...]}
+                       | {"product": [<experiment-spec>, ...]}
 ```
 
 ## Getting started
@@ -153,7 +145,7 @@ This source code in this repository is free: you can redistribute it and/or modi
 
 This source code in this repository is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the Apache Software License for more details.
 
-You should have received a copy of the Apache Software License along with this program. If not, see http://www.apache.org/licenses/LICENSE-2.0.html
+You should have received a copy of the Apache Software License along with this program. If not, see <http://www.apache.org/licenses/LICENSE-2.0.html>
 
 The source code forked from other open source projects will inherit its license.
 
