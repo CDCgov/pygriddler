@@ -7,80 +7,52 @@
         "version": {
             "type": "string"
         },
-        "parameters": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "object",
-                "oneOf": [
-                    {
-                        "description": "fixed parameter",
-                        "properties": {
-                            "fix": {},
-                            "if": {
-                                "$ref": "#/$defs/if_condition"
-                            },
-                            "comment": {}
-                        },
-                        "required": [
-                            "fix"
-                        ],
-                        "additionalProperties": false
-                    },
-                    {
-                        "description": "varying bundle of parameters",
-                        "properties": {
-                            "vary": {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "type": "array"
-                                }
-                            },
-                            "if": {
-                                "$ref": "#/$defs/if_condition"
-                            },
-                            "comment": {}
-                        },
-                        "required": [
-                            "vary"
-                        ],
-                        "additionalProperties": false
-                    },
-                    {
-                        "description": "varying bundle, with one parameter, in short form",
-                        "properties": {
-                            "vary": {
-                                "type": "array"
-                            },
-                            "if": {
-                                "$ref": "#/$defs/if_condition"
-                            },
-                            "comment": {}
-                        },
-                        "required": [
-                            "vary"
-                        ],
-                        "additionalProperties": false
-                    }
-                ]
-            }
+        "experiment": {
+            "$ref": "#/$defs/experiment"
         }
     },
     "required": [
         "version",
-        "parameters"
+        "experiment"
     ],
     "additionalProperties": false,
     "$defs": {
-        "if_condition": {
-            "type": "object",
-            "properties": {
-                "equals": {
+        "experiment": {
+            "oneOf": [
+                {
+                    "$comment": "list of specs",
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                {
+                    "$comment": "union of experiments",
                     "type": "object",
-                    "minProperties": 1,
-                    "maxProperties": 1
+                    "properties": {
+                        "union": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/$defs/experiment"
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "$comment": "product of experiments",
+                    "type": "object",
+                    "properties": {
+                        "product": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/$defs/experiment"
+                            }
+                        }
+                    },
+                    "additionalProperties": false
                 }
-            },
-            "additionalProperties": false
+            ]
         }
     }
 }
