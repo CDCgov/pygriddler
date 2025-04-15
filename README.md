@@ -9,15 +9,13 @@ Griddles have a specific syntax. In this trivial example:
 ```yaml
 version: v0.3
 parameters:
-  R0: {fix: 1.0}
+  R0: { fix: 1.0 }
 ```
 
 We get a single output parameter set:
 
 ```json
-[
-    {"R0": 1.0}
-]
+[{ "R0": 1.0 }]
 ```
 
 Griddler supports **varying multiple parameters** over a grid:
@@ -25,18 +23,18 @@ Griddler supports **varying multiple parameters** over a grid:
 ```yaml
 version: v0.3
 parameters:
-  R0: {vary: [1.5, 2.0]}
-  gamma: {vary: [0.3, 0.4]}
+  R0: { vary: [1.5, 2.0] }
+  gamma: { vary: [0.3, 0.4] }
 ```
 
 produces 4 output parameter sets, with all combinations of input varying parameters:
 
 ```json
 [
-    {"R0": 1.5, "gamma": 0.3},
-    {"R0": 1.5, "gamma": 0.4},
-    {"R0": 2.0, "gamma": 0.3},
-    {"R0": 2.0, "gamma": 0.4}
+  { "R0": 1.5, "gamma": 0.3 },
+  { "R0": 1.5, "gamma": 0.4 },
+  { "R0": 2.0, "gamma": 0.3 },
+  { "R0": 2.0, "gamma": 0.4 }
 ]
 ```
 
@@ -46,16 +44,17 @@ Griddler supports **bundles of parameters that vary together** (e.g., to produce
 version: v0.3
 parameters:
   scenario:
-    R0: [low, high]
-    gamma: [low, high]
+    vary:
+      R0: [low, high]
+      gamma: [low, high]
 ```
 
 produces only 2 outputs:
 
 ```json
 [
-    {"R0": "low", "gamma": "low"},
-    {"R0": "high", "gamma": "high"}
+  { "R0": "low", "gamma": "low" },
+  { "R0": "high", "gamma": "high" }
 ]
 ```
 
@@ -64,12 +63,12 @@ Griddle **conditional parameters**, allowing for subgridding:
 ```yaml
 version: v0.3
 parameters:
-  method: {vary: [newton, brent]}
+  method: { vary: [newton, brent] }
   start_point:
-    if: {equals: {method: newton}}
+    if: { equals: { method: newton } }
     vary: [0.25, 0.50, 0.75]
   bounds:
-    if: {equals: {method: brent}}
+    if: { equals: { method: brent } }
     fix: [0.0, 1.0]
 ```
 
@@ -77,10 +76,10 @@ which produces 4 parameter sets:
 
 ```json
 [
-    {"method": "newton", "start_point": 0.25},
-    {"method": "newton", "start_point": 0.50},
-    {"method": "newton", "start_point": 0.75},
-    {"method": "brent", "bounds": [0.0, 1.0]}
+  { "method": "newton", "start_point": 0.25 },
+  { "method": "newton", "start_point": 0.5 },
+  { "method": "newton", "start_point": 0.75 },
+  { "method": "brent", "bounds": [0.0, 1.0] }
 ]
 ```
 
@@ -90,9 +89,9 @@ which produces 4 parameter sets:
 version: v0.3
 parameters:
   # fixed parameter
-  NAME1: {fix: VALUE}
+  NAME1: { fix: VALUE }
   # single varying parameter
-  NAME2: {vary: [VALUE, VALUE]}
+  NAME2: { vary: [VALUE, VALUE] }
   # varying bundle
   BUNDLE:
     NAME3: [VALUE, VALUE]
@@ -100,7 +99,7 @@ parameters:
   # conditions and comments
   NAME5:
     fix: VALUE
-    if: {equals: {NAME: VALUE}}
+    if: { equals: { NAME: VALUE } }
     comment: COMMENT
 ```
 
