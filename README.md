@@ -1,12 +1,32 @@
 # Griddler: making grids of parameters
 
-Griddler is a tool for converting _griddles_, which are human-written files for specifying simulation experiments, into lists of machine-readable parameter specifications.
+Griddler is a tool for converting human-written specifications for simulation experiments into lists of machine-readable specifications.
 
-An _experiment_ is a set (or list, with the understanding that the order is not guaranteed) of _parameter specifications_. A parameter specification is a set of parameter name-value pairs (e.g., implemented as a JSON object or a Python dictionary.)
+## Core concepts
+
+There is no common nomenclature for the problem griddler solves, so we [make up our own](https://xkcd.com/927/). There are 3 core entities in griddler:
+
+- A _parameter_ is a paired name and value, encoding an idea like "the reproduction number is 1.2."
+- A _specification_ is a set (i.e., unordered list) of parameters. A specification can be all the variables and other configuration required to specify and run a single simulation.
+- An _experiment_ is a set of specifications. An experiment might include replicate experiments with different random seeds, simple grids of parameter values (hence, "griddler"), or more complex combinations of parameters.
+
+And there are 3 core operations:
+
+- The _union_ of two specifications that do not share a parameter with the same name is the union of the sets of parameters, which is another specification.
+- The _union_ of two experiments, which is just the union of the sets of parameter specifications, is another experiment.
+- The _product_ of two experiments, similar to a Cartesian product, is another experiment consisting of the unions of all possible pairs of specifications formed by taking one specification from each of the two experiments.
+
+These operations, combined in different ways, are sufficient to produce all sorts of experiments!
 
 ## Griddles
 
-A griddle, typically written in YAML, consists of some metadata and an _experiment specification_. The experiment specification can be the experiment itself, that is, the list of parameter specs. Thus, the trivial example is:
+For complex experiments, you might want to write a Python file that manipulates `Parameter`, `Spec`, and `Experiment` objects directly.
+
+For simpler experiments, griddler supports multiple _griddle_ schemas. A griddle is a human-written file, usually a YAML or JSON, that contains some metadata and then whatever is needed to uniquely specify the experiment.
+
+### Schema `v0.3`
+
+Schema `v0.3` adheres as close as possible to the underlying griddler logic while not actually requiring any Python. The trivial example is:
 
 ```yaml
 version: v0.3
@@ -26,7 +46,7 @@ We get a single output parameter set, serialized as JSON:
 [{ "R0": 1.0 }]
 ```
 
-The power of griddler is in taking _products_ and _unions_ over experiments. The product of two experiments is the Cartesian product of their constitutent parameter specs. For example:
+An example of the product might be:
 
 ```yaml
 version: v0.3
@@ -78,21 +98,21 @@ which produces multiple parameter sets:
 ]
 ```
 
-### Syntax summary
+#### Syntax
 
-The griddle has syntax:
+The `v0.3` schema has syntax:
 
 ```yaml
 version: v0.3
-experiment: <experiment-spec>
+experiment: <experiment>
 ```
 
-where the experiment specification has syntax:
+where the experiment has syntax:
 
 ```text
-<experiment-spec> ::= [<parameter-spec>, ...]
-                       | {"union": [<experiment-spec>, ...]}
-                       | {"product": [<experiment-spec>, ...]}
+<experiment> ::= [<parameter>, ...]
+                 | {"union": [<experiment>, ...]}
+                 | {"product": [<experiment>, ...]}
 ```
 
 ## Getting started
