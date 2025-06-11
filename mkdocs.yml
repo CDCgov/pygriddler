@@ -2,7 +2,8 @@ site_name: griddler
 
 nav:
   - index.md
-  - griddle.md
+  - core_concepts.md
+  - griddles.md
   - reference.md
 
 repo_url: https://github.com/cdcgov/pygriddler

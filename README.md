@@ -2,21 +2,32 @@
 
 Griddler is a tool for converting human-written specifications for simulation experiments into lists of machine-readable specifications.
 
-## Core concepts
+## Why griddler?
 
-There is no common nomenclature for the problem griddler solves, so we [make up our own](https://xkcd.com/927/). There are 3 core entities in griddler:
+TBD
 
-- A _parameter_ is a paired name and value, encoding an idea like "the reproduction number is 1.2."
-- A _specification_ is a set (i.e., unordered list) of parameters. A specification can be all the variables and other configuration required to specify and run a single simulation.
-- An _experiment_ is a set of specifications. An experiment might include replicate experiments with different random seeds, simple grids of parameter values (hence, "griddler"), or more complex combinations of parameters.
+## Getting started
 
-And there are 3 core operations:
+Read the [GitHub pages documentation](https://cdcgov.github.io/pygriddler/)!
 
-- The _union_ of two specifications that do not share a parameter with the same name is the union of the sets of parameters, which is another specification.
-- The _union_ of two experiments, which is just the union of the sets of parameter specifications, is another experiment.
-- The _product_ of two experiments, similar to a Cartesian product, is another experiment consisting of the unions of all possible pairs of specifications formed by taking one specification from each of the two experiments.
+If you have a griddle written in a [supported schema](docs/griddles.md), the easiest way to use griddler is from the command line:
 
-These operations, combined in different ways, are sufficient to produce all sorts of experiments!
+```bash
+python -m griddler my_griddle.yaml > my_experiment.json
+```
+
+Or, from within Python:
+
+```python
+import griddler
+import yaml
+
+with open("my_griddle.yaml") as f:
+    raw_griddle = yaml.safe_load(f)
+
+my_griddle = griddler.Griddle(raw_griddle)
+my_experiment = my_griddle.parse()
+```
 
 ## Griddles
 
@@ -114,30 +125,6 @@ where the experiment has syntax:
                  | {"union": [<experiment>, ...]}
                  | {"product": [<experiment>, ...]}
 ```
-
-## Getting started
-
-Use griddler from the command line:
-
-```bash
-python -m griddler my_griddle.yaml > parameter_sets.json
-```
-
-Or, from within Python:
-
-```python
-import yaml
-
-import griddler
-
-with open("my_griddle.yaml") as f:
-    raw_griddle = yaml.safe_load(f)
-
-griddle = griddler.Griddle(raw_griddle)
-parameter_sets = griddle.parse()
-```
-
-See the [GitHub pages documentation](https://cdcgov.github.io/pygriddler/) for more detail. Source documentation is under `docs/`.
 
 ## Project Admin
 
