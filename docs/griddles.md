@@ -1,6 +1,6 @@
 # Griddles
 
-For complex Experiments, you might want to write a Python file that manipulates `Parameter`, `Spec`, and `Experiment` objects directly. See the [API reference](api.md) for more details.
+For complex Experiments, you might want to write a Python file that manipulates `Spec` and `Experiment` objects directly. See the [API reference](api.md) for more details.
 
 For simpler Experiments, griddler supports _griddles_. A griddle is a dictionary, usually read in from a human-written file like a YAML or JSON, that specifies the _schema_ and then whatever is needed to uniquely specify the Experiment. (Technically, a griddle is a Python dictionary, but we might also loosely refer to the YAML or JSON file as a "griddle.")
 
