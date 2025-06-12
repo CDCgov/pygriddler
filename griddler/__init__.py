@@ -6,8 +6,8 @@ from griddler.core import Experiment, Spec
 
 def parse(griddle: dict) -> Experiment:
     """Parse a griddle into an Experiment."""
-    assert isinstance(griddle, dict), "Griddle must be a dictionary"
-    assert "schema" in griddle, "Griddle must have a schema"
+    assert isinstance(griddle, dict), "griddle must be a dictionary"
+    assert "schema" in griddle, "griddle must have a schema"
 
     match griddle["schema"]:
         case "v0.4":
