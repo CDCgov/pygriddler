@@ -4,7 +4,7 @@ nav:
   - index.md
   - core_concepts.md
   - griddles.md
-  - reference.md
+  - api.md
 
 repo_url: https://github.com/cdcgov/pygriddler
 repo_name: repo
