@@ -14,9 +14,7 @@ def load_schema() -> dict:
     Returns:
         dict: schema
     """
-    with importlib.resources.open_text(
-        "griddler", "schemas", "v04", "schema.json"
-    ) as f:
+    with importlib.resources.open_text("griddler.schemas.v04", "schema.json") as f:
         schema = json.load(f)
 
     return schema

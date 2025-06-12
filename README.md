@@ -29,29 +29,27 @@ my_griddle = griddler.Griddle(raw_griddle)
 my_experiment = my_griddle.parse()
 ```
 
-## Griddles
+## Examples
 
-For complex experiments, you might want to write a Python file that manipulates `Parameter`, `Spec`, and `Experiment` objects directly.
+For complex experiments, you might want to write a Python file that manipulates `Parameter`, `Spec`, and `Experiment` objects directly. See the [API reference](docs/api.md) for more details.
 
-For simpler experiments, griddler supports multiple _griddle_ schemas. A griddle is a human-written file, usually a YAML or JSON, that contains some metadata and then whatever is needed to uniquely specify the experiment.
+For simpler experiments, griddler supports multiple _griddle_ schemas. A griddle is a human-written file, usually a YAML or JSON, that contains some metadata and then whatever is needed to uniquely specify the experiment. See the [griddle](docs/griddles.md) for more details.
 
-### Schema `v0.3`
-
-Schema `v0.3` adheres as close as possible to the underlying griddler logic while not actually requiring any Python. The trivial example is:
+The trivial example is:
 
 ```yaml
-version: v0.3
+schema: v0.4
 experiment: []
 ```
 
-This returns an empty list `[]` of parameter specifications. The minimal example, of a single, fixed parameter is:
+The minimal example of a single, fixed parameter is:
 
 ```yaml
-version: v0.3
+schema: v0.4
 experiment: [{ R0: 1.0 }]
 ```
 
-We get a single output parameter set, serialized as JSON:
+The output, serialized as JSON, is:
 
 ```json
 [{ "R0": 1.0 }]
@@ -60,14 +58,14 @@ We get a single output parameter set, serialized as JSON:
 An example of the product might be:
 
 ```yaml
-version: v0.3
+schema: v0.4
 experiment:
   product:
     - [{ R0: 1.5 }, { R0: 2.0 }]
     - [{ gamma: 0.3 }, { gamma: 0.4 }]
 ```
 
-which produces 4 output parameter sets, with all combinations of input varying parameters:
+which produces a list of 4 outputs, with all combinations of input varying parameters:
 
 ```json
 [
@@ -96,7 +94,7 @@ experiment:
             - [{ scale: 0.5 }, { scale: 1.0 }]
 ```
 
-which produces multiple parameter sets:
+which produces multiple outputs:
 
 ```json
 [
@@ -107,23 +105,6 @@ which produces multiple parameter sets:
   { "R0": 1.5, "distribution": "gamma", "shape": 0.5, "scale": 0.5 }
   // etc. with further shape/scale combinations
 ]
-```
-
-#### Syntax
-
-The `v0.3` schema has syntax:
-
-```yaml
-version: v0.3
-experiment: <experiment>
-```
-
-where the experiment has syntax:
-
-```text
-<experiment> ::= [<parameter>, ...]
-                 | {"union": [<experiment>, ...]}
-                 | {"product": [<experiment>, ...]}
 ```
 
 ## Project Admin

@@ -108,7 +108,7 @@ class TestSchema:
     @classmethod
     def validate_experiment(cls, x: dict | list) -> None:
         """Validate the experiment inside a griddle"""
-        cls.validate_griddle({"schema": "my_version", "experiment": x})
+        cls.validate_griddle({"schema": "my_schema", "experiment": x})
 
     def test_v0_2_griddle_fails(self):
         with pytest.raises(jsonschema.exceptions.ValidationError):
@@ -116,11 +116,11 @@ class TestSchema:
 
     def test_griddle_minimal(self):
         """Minimal griddle"""
-        self.validate_griddle({"version": "my_version", "experiment": []})
+        self.validate_griddle({"schema": "my_schema", "experiment": []})
 
     def test_griddle_one_spec(self):
         """Griddle with one fixed parameter"""
-        self.validate_griddle({"version": "my_version", "experiment": [{"R0": 1.5}]})
+        self.validate_griddle({"schema": "my_schema", "experiment": [{"R0": 1.5}]})
 
     def test_experiment_two_spec(self):
         """Experiment with two specs"""
