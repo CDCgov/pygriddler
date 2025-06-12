@@ -9,7 +9,8 @@ import griddler
 
 def main(args):
     parser = argparse.ArgumentParser(
-        prog="pythom -m griddler", description="Parse a griddle into parameter sets."
+        prog="pythom -m griddler",
+        description="Parse a griddle into a list of dictionaries.",
     )
 
     parser.add_argument(
@@ -58,13 +59,12 @@ def main(args):
     else:
         raise RuntimeError(f"Invalid input format {args.from_}")
 
-    griddle = griddler.Griddle(raw)
-    parameter_sets = griddle.parse()
+    experiment_dicts = griddler.parse(raw).to_dicts()
 
     if args.to == "yaml":
-        yaml.dump(parameter_sets, args.output)
+        yaml.dump(experiment_dicts, args.output)
     elif args.to == "json":
-        json.dump(parameter_sets, args.output, indent=2)
+        json.dump(experiment_dicts, args.output, indent=2)
     else:
         raise RuntimeError(f"Invalid output format {args.to}")
 
