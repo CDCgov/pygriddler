@@ -9,7 +9,7 @@ import griddler
 
 def main(args):
     parser = argparse.ArgumentParser(
-        prog="pythom -m griddler",
+        prog="python -m griddler",
         description="Parse a griddle into a list of dictionaries.",
     )
 
