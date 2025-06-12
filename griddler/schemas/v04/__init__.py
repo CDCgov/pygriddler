@@ -37,7 +37,7 @@ def _parse_experiment(x: list[dict[str, Any]] | dict[str, Any]) -> Experiment:
         assert len(x) == 1
         key, value = list(x.items())[0]
         assert isinstance(value, list)
-        subexperiments = [Experiment(elt) for elt in value]
+        subexperiments = [_parse_experiment(elt) for elt in value]
         if key == "union":
             return functools.reduce(lambda x, y: x | y, subexperiments)
         elif key == "product":
