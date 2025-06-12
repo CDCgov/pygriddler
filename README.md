@@ -1,10 +1,12 @@
-# Griddler: making grids of parameters
+# Griddler: a grammar of parameters
 
 Griddler is a tool for converting human-written specifications for simulation experiments into lists of machine-readable specifications.
 
 ## Why griddler?
 
-TBD
+Modelers often want to run multiple simulations with different but related parameterizations. Some parameters should be in common across all simulations, while others should vary in patterns like "grids" or "bundles."
+
+Griddler provides a grammar of these kinds of multiple parameterizations that aims to separate the specification of parameterizations from the running of simulations. Ideally, a user can write a single "[griddle](docs/griddle.md)" file (or, in more complex cases, a `griddle`-importing Python script) that produces all the different simulation parameterizations of interest.
 
 ## Getting started
 
@@ -79,7 +81,7 @@ which produces a list of 4 outputs, with all combinations of input varying param
 Unions become useful when combining experiments that vary different parameters. For example, an experiment might consist of some simulations where a simulated quantity follows the normal distribution and other simulations where it follows the gamma distribution. For the normal distribution simulations, we might want to grid over values of the mean and standard deviation, while in the gamma distribution simulations, we want to grid over shape and scale parameters:
 
 ```yaml
-version: v0.3
+schema: v0.3
 experiment:
   product:
     - [{ R0: 1.5 }]
