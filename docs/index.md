@@ -28,4 +28,4 @@ griddle = griddler.Griddle(raw_griddle)
 parameter_sets = griddle.parse()
 ```
 
-See the the [API reference](api.md) for specifics on griddler's internals.
+See the [API reference](api.md) for specifics on griddler's internals.
