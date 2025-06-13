@@ -81,7 +81,7 @@ which produces a list of 4 outputs, with all combinations of input varying param
 Unions become useful when combining experiments that vary different parameters. For example, an experiment might consist of some simulations where a simulated quantity follows the normal distribution and other simulations where it follows the gamma distribution. For the normal distribution simulations, we might want to grid over values of the mean and standard deviation, while in the gamma distribution simulations, we want to grid over shape and scale parameters:
 
 ```yaml
-schema: v0.3
+schema: v0.4
 experiment:
   product:
     - [{ R0: 1.5 }]
