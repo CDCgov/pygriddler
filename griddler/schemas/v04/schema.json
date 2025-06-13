@@ -1,0 +1,60 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://github.com/CDCgov/pygriddler/schema/griddle.json",
+    "title": "griddle",
+    "type": "object",
+    "properties": {
+        "schema": {
+            "type": "string"
+        },
+        "experiment": {
+            "$ref": "#/$defs/experiment"
+        }
+    },
+    "required": [
+        "schema",
+        "experiment"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+        "experiment": {
+            "oneOf": [
+                {
+                    "$comment": "list of specs",
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                {
+                    "$comment": "union of experiments",
+                    "type": "object",
+                    "properties": {
+                        "union": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/$defs/experiment"
+                            }
+                        }
+                    },
+                    "required": ["union"],
+                    "additionalProperties": false
+                },
+                {
+                    "$comment": "product of experiments",
+                    "type": "object",
+                    "properties": {
+                        "product": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/$defs/experiment"
+                            }
+                        }
+                    },
+                    "required": ["product"],
+                    "additionalProperties": false
+                }
+            ]
+        }
+    }
+}

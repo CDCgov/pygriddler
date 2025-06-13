@@ -1,33 +1,73 @@
-# Griddler: making grids of parameters
+# Griddler: a grammar of parameters
 
-Griddler is a tool for converting human-written simulation experiment parameterizations, called "griddles," into sets of machine-readable parameter sets.
+Griddler is a tool for converting human-written specifications for simulation experiments into lists of machine-readable specifications.
 
-## Griddles
+## Why griddler?
 
-Griddles have a specific syntax. In this trivial example:
+Modelers often want to run multiple simulations with different but related parameterizations. Some parameters should be in common across all simulations, while others should vary in patterns like "grids" or "bundles."
 
-```yaml
-version: v0.3
-parameters:
-  R0: { fix: 1.0 }
+Griddler provides a grammar of these kinds of multiple parameterizations that aims to separate the specification of parameterizations from the running of simulations. Ideally, a user can write a single "[griddle](docs/griddle.md)" file (or, in more complex cases, a `griddle`-importing Python script) that produces all the different simulation parameterizations of interest.
+
+## Getting started
+
+Read the [GitHub pages documentation](https://cdcgov.github.io/pygriddler/)!
+
+If you have a griddle written in a [supported schema](docs/griddles.md), the easiest way to use griddler is from the command line:
+
+```bash
+python -m griddler my_griddle.yaml > my_experiment.json
 ```
 
-We get a single output parameter set:
+Or, from within Python:
+
+```python
+import griddler
+import yaml
+
+with open("my_griddle.yaml") as f:
+    raw_griddle = yaml.safe_load(f)
+
+my_griddle = griddler.Griddle(raw_griddle)
+my_experiment = my_griddle.parse()
+```
+
+## Examples
+
+For complex experiments, you might want to write a Python file that manipulates `Parameter`, `Spec`, and `Experiment` objects directly. See the [API reference](docs/api.md) for more details.
+
+For simpler experiments, griddler supports multiple _griddle_ schemas. A griddle is a human-written file, usually a YAML or JSON, that contains some metadata and then whatever is needed to uniquely specify the experiment. See the [griddle](docs/griddles.md) for more details.
+
+The trivial example is:
+
+```yaml
+schema: v0.4
+experiment: []
+```
+
+The minimal example of a single, fixed parameter is:
+
+```yaml
+schema: v0.4
+experiment: [{ R0: 1.0 }]
+```
+
+The output, serialized as JSON, is:
 
 ```json
 [{ "R0": 1.0 }]
 ```
 
-Griddler supports **varying multiple parameters** over a grid:
+An example of the product might be:
 
 ```yaml
-version: v0.3
-parameters:
-  R0: { vary: [1.5, 2.0] }
-  gamma: { vary: [0.3, 0.4] }
+schema: v0.4
+experiment:
+  product:
+    - [{ R0: 1.5 }, { R0: 2.0 }]
+    - [{ gamma: 0.3 }, { gamma: 0.4 }]
 ```
 
-produces 4 output parameter sets, with all combinations of input varying parameters:
+which produces a list of 4 outputs, with all combinations of input varying parameters:
 
 ```json
 [
@@ -38,94 +78,36 @@ produces 4 output parameter sets, with all combinations of input varying paramet
 ]
 ```
 
-Griddler supports **bundles of parameters that vary together** (e.g., to produce scenarios):
+Unions become useful when combining experiments that vary different parameters. For example, an experiment might consist of some simulations where a simulated quantity follows the normal distribution and other simulations where it follows the gamma distribution. For the normal distribution simulations, we might want to grid over values of the mean and standard deviation, while in the gamma distribution simulations, we want to grid over shape and scale parameters:
 
 ```yaml
-version: v0.3
-parameters:
-  scenario:
-    vary:
-      R0: [low, high]
-      gamma: [low, high]
+schema: v0.4
+experiment:
+  product:
+    - [{ R0: 1.5 }]
+    - union:
+        - product:
+            - [{ distribution: normal }]
+            - [{ mean: 0.5 }, { mean: 1.0 }, { mean: 1.5 }]
+            - [{ sd: 0.5 }, { sd: 1.0 }]
+        - product:
+            - [{ distribution: gamma }]
+            - [{ shape: 0.5 }, { shape: 1.0 }]
+            - [{ scale: 0.5 }, { scale: 1.0 }]
 ```
 
-produces only 2 outputs:
+which produces multiple outputs:
 
 ```json
 [
-  { "R0": "low", "gamma": "low" },
-  { "R0": "high", "gamma": "high" }
+  { "R0": 1.5, "distribution": "normal", "mean": 0.5, "sd": 0.5 },
+  { "R0": 1.5, "distribution": "normal", "mean": 0.5, "sd": 1.0 },
+  { "R0": 1.5, "distribution": "normal", "mean": 1.0, "sd": 0.5 },
+  // etc. with further mean/sd combinations
+  { "R0": 1.5, "distribution": "gamma", "shape": 0.5, "scale": 0.5 }
+  // etc. with further shape/scale combinations
 ]
 ```
-
-Griddle **conditional parameters**, allowing for subgridding:
-
-```yaml
-version: v0.3
-parameters:
-  method: { vary: [newton, brent] }
-  start_point:
-    if: { equals: { method: newton } }
-    vary: [0.25, 0.50, 0.75]
-  bounds:
-    if: { equals: { method: brent } }
-    fix: [0.0, 1.0]
-```
-
-which produces 4 parameter sets:
-
-```json
-[
-  { "method": "newton", "start_point": 0.25 },
-  { "method": "newton", "start_point": 0.5 },
-  { "method": "newton", "start_point": 0.75 },
-  { "method": "brent", "bounds": [0.0, 1.0] }
-]
-```
-
-### Griddle template
-
-```yaml
-version: v0.3
-parameters:
-  # fixed parameter
-  NAME1: { fix: VALUE }
-  # single varying parameter
-  NAME2: { vary: [VALUE, VALUE] }
-  # varying bundle
-  BUNDLE:
-    NAME3: [VALUE, VALUE]
-    NAME4: [VALUE, VALUE]
-  # conditions and comments
-  NAME5:
-    fix: VALUE
-    if: { equals: { NAME: VALUE } }
-    comment: COMMENT
-```
-
-## Getting started
-
-Use griddler from the command line:
-
-```bash
-python -m griddler my_griddle.yaml > parameter_sets.json
-```
-
-Or, from within Python:
-
-```python
-import yaml
-
-import griddler
-
-with open("my_griddle.yaml") as f:
-    raw_griddle = yaml.safe_load(f)
-
-griddle = griddler.Griddle(raw_griddle)
-parameter_sets = griddle.parse()
-```
-
-See the [GitHub pages documentation](https://cdcgov.github.io/pygriddler/) for more detail. Source documentation is under `docs/`.
 
 ## Project Admin
 
@@ -153,7 +135,7 @@ This source code in this repository is free: you can redistribute it and/or modi
 
 This source code in this repository is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the Apache Software License for more details.
 
-You should have received a copy of the Apache Software License along with this program. If not, see http://www.apache.org/licenses/LICENSE-2.0.html
+You should have received a copy of the Apache Software License along with this program. If not, see <http://www.apache.org/licenses/LICENSE-2.0.html>
 
 The source code forked from other open source projects will inherit its license.
 
