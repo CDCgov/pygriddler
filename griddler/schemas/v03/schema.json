@@ -19,31 +19,14 @@
       "additionalProperties": { "$ref": "#/$defs/parameter" }
     },
     "parameter": {
-      "oneOf": [
-        {
-          "$comment": "fixed parameter",
-          "type": "object",
-          "properties": {
-            "fix": {},
-            "if": { "$ref": "#/defs/equals" },
-            "comment": {}
-          },
-          "required": ["fix"],
-          "additionalProperties": false
-        },
-        {
-          "$comment": "vary parameter",
-          "type": "object",
-          "properties": { "vary": { "type": "array" }, "comment": {} },
-          "required": ["vary"],
-          "additionalProperties": false
-        },
-        {
-          "$comment": "bundle",
-          "type": "object",
-          "additionalProperties": { "type": "array" }
-        }
-      ]
+      "type": "object",
+      "properties": {
+        "fix": {},
+        "vary": { "type": "array" },
+        "if": { "$ref": "#/$defs/equals" },
+        "comment": {}
+      },
+      "additionalProperties": { "type": "array" }
     },
     "equals": {
       "$comment": "equals condition",
