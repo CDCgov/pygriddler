@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CDCgov/pygriddler/griddler/schemas/v03/schema.json",
+  "title": "griddle",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "string"
+    },
+    "parameters": {
+      "$ref": "#/$defs/parameters"
+    }
+  },
+  "required": ["schema", "parameters"],
+  "additionalProperties": false,
+  "$defs": {
+    "parameters": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/parameter" }
+    },
+    "parameter": {
+      "oneOf": [
+        {
+          "$comment": "fixed parameter",
+          "type": "object",
+          "properties": {
+            "fix": {},
+            "if": { "$ref": "#/defs/equals" },
+            "comment": {}
+          },
+          "required": ["fix"],
+          "additionalProperties": false
+        },
+        {
+          "$comment": "vary parameter",
+          "type": "object",
+          "properties": { "vary": { "type": "array" }, "comment": {} },
+          "required": ["vary"],
+          "additionalProperties": false
+        },
+        {
+          "$comment": "bundle",
+          "type": "object",
+          "additionalProperties": { "type": "array" }
+        }
+      ]
+    },
+    "equals": {
+      "$comment": "equals condition",
+      "type": "object",
+      "properties": { "equals": { "type": "object" } },
+      "required": ["equals"],
+      "additionalProperties": false
+    }
+  }
+}
