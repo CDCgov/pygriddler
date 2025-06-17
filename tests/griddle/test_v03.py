@@ -21,17 +21,23 @@ def test_simple():
 
 
 def test_vary():
-    assert text_to_dicts("""
+    actual = text_to_dicts("""
     schema: v0.3
     parameters:
       R0: {vary: [1.5, 2.0]}
       gamma: {vary: [0.3, 0.4]}
-    """) == [
+    """)
+
+    expected = [
         {"R0": 1.5, "gamma": 0.3},
         {"R0": 1.5, "gamma": 0.4},
         {"R0": 2.0, "gamma": 0.3},
         {"R0": 2.0, "gamma": 0.4},
     ]
+
+    assert len(actual) == len(expected)
+    for x in expected:
+        assert x in actual
 
 
 def test_bundle():

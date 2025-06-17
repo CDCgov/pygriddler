@@ -30,11 +30,16 @@ def parse(griddle: dict) -> Experiment:
 
 
 def _parse_parameters(parameters: dict[str, Any]) -> Experiment:
+    # determine which parameters are dependent
+    dependent_keys = [key for key, value in parameters.items() if "if" in value]
+    independent_keys = list(set(parameters.keys()) - set(dependent_keys))
+
     # start with an empty experiment
     ex = Experiment([Spec({})])
 
     # call everything a bundle at first
-    for bundle_name, bundle_value in parameters.items():
+    for bundle_name in independent_keys + dependent_keys:
+        bundle_value = parameters[bundle_name]
         assert isinstance(bundle_value, dict)
 
         if "if" in bundle_value:
