@@ -1,6 +1,6 @@
 # griddler
 
-Griddles are the main functionality of griddle. Read about the [griddle schema](griddle.md) to get started.
+Griddles are the main functionality of griddle. Read about the [griddle schema](griddles.md) to get started.
 
 ## Using griddler from the command line
 
@@ -28,4 +28,4 @@ griddle = griddler.Griddle(raw_griddle)
 parameter_sets = griddle.parse()
 ```
 
-See the the [API reference](reference.md) for specifics on griddler's internals.
+See the [API reference](api.md) for specifics on griddler's internals.
