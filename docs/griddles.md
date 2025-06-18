@@ -21,14 +21,14 @@ schema: v0.4
 experiment: []
 ```
 
-This returns an empty Experiment. The minimal example, of a single, fixed parameter is:
+This returns an empty Experiment (i.e., containing zero Specs). The minimal example, of a single, fixed parameter is:
 
 ```yaml
 schema: v0.4
 experiment: [{ R0: 1.0 }]
 ```
 
-This produces an Experiment with a single Specification. Serialized as JSON:
+This produces an Experiment with a single Spec. Serialized as JSON:
 
 ```json
 [{ "R0": 1.0 }]
@@ -44,7 +44,7 @@ experiment:
     - [{ gamma: 0.3 }, { gamma: 0.4 }]
 ```
 
-which produces 4 Specifications, with all combinations of input varying parameters:
+which produces 4 Specs, with all combinations of input varying parameters:
 
 ```json
 [
@@ -73,7 +73,7 @@ experiment:
             - [{ scale: 0.5 }, { scale: 1.0 }]
 ```
 
-which produces multiple Specifications:
+which produces multiple Specs:
 
 ```json
 [
@@ -98,7 +98,7 @@ experiment: <experiment>
 where the experiment has syntax:
 
 ```text
-<experiment> ::= [<parameter>, ...]
+<experiment> ::= [{<key>: <value>, ...}, ...]
                  | {"union": [<experiment>, ...]}
                  | {"product": [<experiment>, ...]}
 ```
@@ -124,7 +124,7 @@ parameters: {}
 
 #### Fixed parameters
 
-A fixed parameter has the same value in all Specifications (unless the parameter is _conditioned_).
+A fixed parameter has the same value in all Specs (unless the parameter is _conditioned_).
 
 ```yaml
 schema: v0.3
@@ -146,7 +146,7 @@ parameters:
 
 #### Varying parameter
 
-A varying parameter takes on different values in different Specifications. In the absence of conditioning or bundling, all combinations of all varying parameters will appear in the output.
+A varying parameter takes on different values in different Specs. In the absence of conditioning or bundling, all combinations of all varying parameters will appear in the output.
 
 ```yaml
 parameters:
