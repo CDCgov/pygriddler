@@ -46,8 +46,8 @@ In the Python implementation, Specifications are implemented as dictionaries:
 - The neutral element $0_M$ is represented by the absence of that key from the dictionary.
 - The Specification's update $\oplus$ operation is implemented by the dictionary's [`update`](https://docs.python.org/3/library/stdtypes.html#dict.update) method, which is also written `|`.
 
-An Experiment is a set of Specifications, equipped with two operations: _union_ $\cap$, which is the union of the sets of Specifications, and _product_ $\otimes$, analogous to Cartesian product. For two experiments $X$ and $Y$, define $X \otimes Y = \{\vec{x} \oplus \vec{y} : \vec{x} \in X, \vec{y} \in Y\}$.
+An Experiment is a set of Specifications, equipped with two operations: _union_ $\cup$, which is the union of the sets of Specifications, and _product_ $\otimes$, analogous to Cartesian product. For two experiments $X$ and $Y$, define $X \otimes Y = \{\vec{x} \oplus \vec{y} : \vec{x} \in X, \vec{y} \in Y\}$.
 
-This structure is a hemiring. Union $\cap$ is a commutative monoid, whose identity element is the empty Experiment $\varnothing$. Product $\otimes$ is a semigroup: it is associative but has no identity element. (Experiments do not form a semiring because of this absence of an identity element for the product operation.)
+This structure is a hemiring. Union $\cup$ is a commutative monoid, whose identity element is the empty Experiment $\varnothing$. Product $\otimes$ is a semigroup: it is associative but has no identity element. (Experiments do not form a semiring because of this absence of an identity element for the product operation.)
 
 Note that, similar to a ring, product $\otimes$ is commutative, and product with the union identity always returns that identity: $X \otimes \varnothing = \varnothing$ for any Experiment $X$.
