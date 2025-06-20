@@ -41,3 +41,26 @@ Specs and the update operation $\uparrow$ form a monoid because there is an iden
 An Experiment is a set of Specs, equipped with two operations: _union_ $\cap$, which is just the union of the constituent sets of Specs, and _product_ $\otimes$, analogous to Cartesian product. For two experiments $X$ and $Y$, define $X \otimes Y = \{S \uparrow T : S \in X, T \in Y\}$.
 
 Experiments and their two operations form a [semiring](https://en.wikipedia.org/wiki/Semiring). Union $\cap$ is a commutative monoid whose identity element is the empty Experiment $\varnothing$ (i.e., a set of no Specs at all). Product $\otimes$ is a non-commutative monoid with identity element $\{ \varnothing \}$ (i.e., an Experiment consisting of a single empty Spec). Note that the union identity $\varnothing$ is an absorbing element under the product operation: $X \otimes \varnothing = \varnothing \otimes X = \varnothing$ for any Experiment $X$.
+
+### Conditional parameters
+
+Informally, the "conditional" parameters in the v0.3 schema "filter" for parts of the Experiment and add new parameters in those situations.
+
+Formally, define the match function:
+
+```math
+\chi(\vec{x}, \vec{y}) = \begin{cases}
+1 & \vec{x} \uparrow \vec{y} = \vec{x} \\
+0 & \text{otherwise}
+\end{cases}
+```
+
+That is, $\vec{y}$ matches $\vec{x}$ if updating $\vec{x}$ with $\vec{y}$ would have no effect, or, in other words, if all the defined (i.e., non-neutral) elements of $\vec{y}$ are equal to the corresponding values in $\vec{x}$.
+
+Let $\vec{p}$ be the Spec that specifies the parameters that are to be added to the Experiment according to the matching Spec $\vec{m}$. Then the operation of adding a conditional parameter is:
+
+```math
+[\{ \vec{x} \in X : \chi(\vec{x}, \vec{m}) = 1 \} \otimes \vec{p}]
+\cup
+\{ \vec{x} \in X : \chi(\vec{x}, \vec{m}) = 0 \}
+```
