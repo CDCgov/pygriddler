@@ -28,6 +28,10 @@ class Experiment:
         for spec in self.specs:
             assert isinstance(spec, Spec)
 
+    def __str__(self) -> str:
+        spec_str = ", ".join(str(spec) for spec in self.specs)
+        return f"Experiment([{spec_str}])"
+
     def __or__(self, other: "Experiment") -> "Experiment":
         assert isinstance(other, Experiment)
         return Experiment(self.specs + other.specs)

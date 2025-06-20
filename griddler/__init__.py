@@ -1,5 +1,6 @@
 __all__ = ["Spec", "Experiment", "parse"]
 
+import griddler.schemas.v03
 import griddler.schemas.v04
 from griddler.core import Experiment, Spec
 
@@ -12,5 +13,7 @@ def parse(griddle: dict) -> Experiment:
     match griddle["schema"]:
         case "v0.4":
             return griddler.schemas.v04.parse(griddle)
+        case "v0.3":
+            return griddler.schemas.v03.parse(griddle)
         case _:
             raise RuntimeError(f"Unknown griddle schema: {griddle['schema']}")

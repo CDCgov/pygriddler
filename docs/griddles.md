@@ -105,13 +105,7 @@ where the experiment has syntax:
 
 ### v0.3
 
-!!! warning
-
-    v0.3 is not currently supported. The documentation is here for reference purposes. v0.3 may be retroactively supported in the future.
-
-!!! note
-
-    This document uses JSON typing nomenclature. A JSON array is like a Python list. A JSON object is a Python dictionary. An object keyword is like a dictionary key.
+The v0.3 syntax is designed to for simple combinations of fixed and varying parameters.
 
 #### Minimal griddle
 
@@ -188,24 +182,22 @@ A _conditioned_ parameter will only be present in a parameter set when some one 
 
 For now, the only supported conditions are:
 
-1. `true` and
+1. `{}`, which is always true, and
 2. a test for equality of a single parameter to a single value: `{equals: {COND_NAME: COND_VALUE}}`.
-
-Future schemas may support more complex atomic conditions like membership and boolean logic to combine conditions.
 
 ```yaml
 parameters:
   FIXED_NAME:
-    if: true
     fix: VALUE
+    if: true
 
-  VARYING_BUNDLE_NAME:
-    if: { equals: { COND_NAME: COND_VALUE } }
+  VARYING_NAME:
     vary:
       VARYING_PARAM_NAME: [VALUE1, VALUE2]
+    if: { equals: { COND_NAME: COND_VALUE } }
 ```
 
-The dependencies formed by the `if` statements cannot be cyclical.
+Conditioned parameters are evaluated after unconditioned parameters, but the order of their evaluation is not guaranteed. Thus, a graph of dependent `if` statements is not supported.
 
 #### Comments
 
