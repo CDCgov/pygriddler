@@ -5,7 +5,7 @@ from typing import Any
 
 import jsonschema
 
-from griddler.core import Experiment, Spec
+from griddler.core import Experiment
 
 
 def load_schema() -> dict:
@@ -32,7 +32,7 @@ def parse(griddle: dict) -> Experiment:
 
 def _parse_experiment(x: list[dict[str, Any]] | dict[str, Any]) -> Experiment:
     if isinstance(x, list):
-        return Experiment([Spec(elt) for elt in x])
+        return Experiment(x)
     elif isinstance(x, dict):
         assert len(x) == 1
         key, value = list(x.items())[0]
