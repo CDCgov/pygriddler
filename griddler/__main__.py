@@ -59,7 +59,7 @@ def main(args):
     else:
         raise RuntimeError(f"Invalid input format {args.from_}")
 
-    experiment_dicts = griddler.parse(raw).to_dicts()
+    experiment_dicts = griddler.parse(raw).specs
 
     if args.to == "yaml":
         yaml.dump(experiment_dicts, args.output)
