@@ -19,7 +19,11 @@ See the [API reference](api.md) for more details.
 
 ## Theory
 
-Mathematically speaking, Specs are their operation are a [monoid](https://en.wikipedia.org/wiki/Monoid), while Experiments and their operations are a [hemiring](https://en.wikipedia.org/wiki/Semiring#Generalizations). Specifically, a Spec $\vec{x} = (x_1, \ldots, x_N)$ is a tuple, where $N$ is the total number of parameters we will be interested in. ($N$ may be greater than the number of parameters with assigned values in any particular Spec.) The space of the $x_i$ includes all possible parameter values as well as an additional neutral element $0_M$. The $x_i$ have a single binary operation _update_ $\uparrow$ that returns the right element, unless that element is the neutral element:
+Mathematically speaking, Specs are their operation are a [monoid](https://en.wikipedia.org/wiki/Monoid), while Experiments and their operations are a [hemiring](https://en.wikipedia.org/wiki/Semiring#Generalizations).
+
+### Specs
+
+Specifically, a Spec $\vec{x} = (x_1, \ldots, x_N)$ is a tuple, where $N$ is the total number of parameters we will be interested in. ($N$ may be greater than the number of parameters with assigned values in any particular Spec.) The space of the $x_i$ includes all possible parameter values as well as an additional neutral element $0_M$. The $x_i$ have a single binary operation _update_ $\uparrow$ that returns the right element, unless that element is the neutral element:
 
 ```math
 x \uparrow y = \begin{cases}
@@ -42,8 +46,33 @@ Thus, Specs and their $\uparrow$ operator also form a monoid.
 
 In the Python implementation, Specs are implemented as dictionaries. Dictionaries are indexed by parameter names rather than integers $i$ to index the values, and the neutral element $0_M$ is represented by the absence of that key from the dictionary.
 
+### Experiments
+
 An Experiment is a set of Specs, equipped with two operations: _union_ $\cap$, which is just the union of the sets of Specs, and _product_ $\otimes$, analogous to Cartesian product. For two experiments $X$ and $Y$, define $X \otimes Y = \{\vec{x} \uparrow \vec{y} : \vec{x} \in X, \vec{y} \in Y\}$.
 
 Experiments and their operations form a hemiring. Union $\cap$ is a commutative monoid, whose identity element is the empty Experiment $\varnothing$. Product $\otimes$ is a semigroup: it is associative but has no identity element. (Experiments do not form a semiring because of this absence of an identity element for the product operation.)
 
 Note that, similar to a ring, product $\otimes$ is commutative, and product with the union identity always returns that identity: $X \otimes \varnothing = \varnothing$ for any Experiment $X$.
+
+### Conditional parameters
+
+Informally, the "conditional" parameters in the v0.3 schema "filter" for parts of the Experiment and add new parameters in those situations.
+
+Formally, define the match function:
+
+```math
+\chi(\vec{x}, \vec{y}) = \begin{cases}
+1 & \vec{x} \uparrow \vec{y} = \vec{x} \\
+0 & \text{otherwise}
+\end{cases}
+```
+
+That is, $\vec{y}$ matches $\vec{x}$ if updating $\vec{x}$ with $\vec{y}$ would have no effect, or, in other words, if all the defined (i.e., non-neutral) elements of $\vec{y}$ are equal to the corresponding values in $\vec{x}$.
+
+Let $\vec{p}$ be the Spec that specifies the parameters that are to be added to the Experiment according to the matching Spec $\vec{m}$. Then the operation of adding a conditional parameter is:
+
+```math
+[\{ \vec{x} \in X : \chi(\vec{x}, \vec{m}) = 1 \} \otimes \vec{p}]
+\cup
+\{ \vec{x} \in X : \chi(\vec{x}, \vec{m}) = 0 \}
+```
