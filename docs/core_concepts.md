@@ -19,28 +19,30 @@ See the [API reference](api.md) for more details.
 
 ## Theory
 
-Mathematically speaking, Specs are their operation are a [monoid](https://en.wikipedia.org/wiki/Monoid), while Experiments and their operations are a [hemiring](https://en.wikipedia.org/wiki/Semiring#Generalizations). Specifically, a Spec $\vec{x} = (x_1, \ldots, x_N)$ is a tuple, where $N$ is the total number of parameters we will be interested in. ($N$ may be greater than the number of parameters with assigned values in any particular Spec.) The space of the $x_i$ includes all possible parameter values as well as an additional neutral element $0_M$. The $x_i$ have a single binary operation _update_ $\oplus$ that returns the right element, unless that element is the neutral element:
+Mathematically speaking, Specs are their operation are a [monoid](https://en.wikipedia.org/wiki/Monoid), while Experiments and their operations are a [hemiring](https://en.wikipedia.org/wiki/Semiring#Generalizations). Specifically, a Spec $\vec{x} = (x_1, \ldots, x_N)$ is a tuple, where $N$ is the total number of parameters we will be interested in. ($N$ may be greater than the number of parameters with assigned values in any particular Spec.) The space of the $x_i$ includes all possible parameter values as well as an additional neutral element $0_M$. The $x_i$ have a single binary operation _update_ $\uparrow$ that returns the right element, unless that element is the neutral element:
 
 ```math
-x \oplus y = \begin{cases}
+x \uparrow y = \begin{cases}
 x & y = 0_M \\
 y & \text{otherwise}
 \end{cases}
 ```
 
-Note the values and the operation $\oplus$ form a monoid, not a [group](<https://en.wikipedia.org/wiki/Group_(mathematics)>), because the $\oplus$ operation lacks an inverse (i.e., for all $x \neq 0_M$, there is no $x^{-1}$ such that $x \oplus x^{-1} = 0_M$). Note also that this monoid is not commutative (i.e., $x \oplus y \neq y \oplus x$ in general).
+(This operation is [null coalescence](https://en.wikipedia.org/wiki/Null_coalescing_operator) but with the order of inputs reversed.)
+
+Note the values and the operation $\uparrow$ form a monoid, not a [group](<https://en.wikipedia.org/wiki/Group_(mathematics)>), because the $\uparrow$ operation lacks an inverse (i.e., for all $x \neq 0_M$, there is no $x^{-1}$ such that $x \uparrow x^{-1} = 0_M$). Note also that this monoid is not commutative (i.e., $x \uparrow y = y \uparrow x$ only if $x = 0_M$ or $y = 0_M$).
 
 Specs have an analogous update operation that is the element application of the value-wise update operation:
 
 ```math
-\vec{x} \oplus \vec{y} = (x_1 \oplus y_1, \ldots, x_N \oplus y_N)
+\vec{x} \uparrow \vec{y} = (x_1 \uparrow y_1, \ldots, x_N \uparrow y_N)
 ```
 
-Thus, Specs and their $\oplus$ operator also form a monoid.
+Thus, Specs and their $\uparrow$ operator also form a monoid.
 
 In the Python implementation, Specs are implemented as dictionaries. Dictionaries are indexed by parameter names rather than integers $i$ to index the values, and the neutral element $0_M$ is represented by the absence of that key from the dictionary.
 
-An Experiment is a set of Specs, equipped with two operations: _union_ $\cap$, which is just the union of the sets of Specs, and _product_ $\otimes$, analogous to Cartesian product. For two experiments $X$ and $Y$, define $X \otimes Y = \{\vec{x} \oplus \vec{y} : \vec{x} \in X, \vec{y} \in Y\}$.
+An Experiment is a set of Specs, equipped with two operations: _union_ $\cap$, which is just the union of the sets of Specs, and _product_ $\otimes$, analogous to Cartesian product. For two experiments $X$ and $Y$, define $X \otimes Y = \{\vec{x} \uparrow \vec{y} : \vec{x} \in X, \vec{y} \in Y\}$.
 
 Experiments and their operations form a hemiring. Union $\cap$ is a commutative monoid, whose identity element is the empty Experiment $\varnothing$. Product $\otimes$ is a semigroup: it is associative but has no identity element. (Experiments do not form a semiring because of this absence of an identity element for the product operation.)
 
