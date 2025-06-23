@@ -25,10 +25,10 @@ import griddler
 import yaml
 
 with open("my_griddle.yaml") as f:
-    raw_griddle = yaml.safe_load(f)
+    my_griddle = yaml.safe_load(f)
 
-my_griddle = griddler.Griddle(raw_griddle)
-my_experiment = my_griddle.parse()
+my_experiment = griddler.parse(my_griddle)
+my_parameter_sets = my_experiment.to_dicts()
 ```
 
 ## Examples
