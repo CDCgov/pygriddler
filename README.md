@@ -25,10 +25,10 @@ import griddler
 import yaml
 
 with open("my_griddle.yaml") as f:
-    raw_griddle = yaml.safe_load(f)
+    my_griddle = yaml.safe_load(f)
 
-my_griddle = griddler.Griddle(raw_griddle)
-my_experiment = my_griddle.parse()
+my_experiment = griddler.parse(my_griddle)
+my_parameter_sets = my_experiment.to_dicts()
 ```
 
 ## Examples
@@ -37,7 +37,7 @@ For complex experiments, you might want to write a Python file that manipulates 
 
 For simpler experiments, griddler supports multiple _griddle_ schemas. A griddle is a human-written file, usually a YAML or JSON, that contains some metadata and then whatever is needed to uniquely specify the experiment. See the [griddle](docs/griddles.md) for more details.
 
-The trivial example is:
+In the `v0.4` schema, the trivial example is:
 
 ```yaml
 schema: v0.4
