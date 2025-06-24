@@ -1,20 +1,4 @@
-from typing import Any, Iterable, List
-
-
-class Spec(dict):
-    """
-    A parameter specification, or Spec, is an extension of a dictionary,
-    with the added requirement that all keys be strings.
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        for key in self:
-            assert isinstance(key, str)
-
-    def to_dict(self) -> dict:
-        return dict(self)
+from typing import Iterable
 
 
 class Experiment:
@@ -22,38 +6,27 @@ class Experiment:
     An Experiment is set of Specs, supporting union and product operations.
     """
 
-    def __init__(self, specs: Iterable[Spec]):
+    def __init__(self, specs: Iterable[dict]):
         self.specs = list(specs)
 
         for spec in self.specs:
-            assert isinstance(spec, Spec)
+            assert isinstance(spec, dict)
 
     def __str__(self) -> str:
         spec_str = ", ".join(str(spec) for spec in self.specs)
         return f"Experiment([{spec_str}])"
 
-    def __or__(self, other: "Experiment") -> "Experiment":
+    def union(self, other: "Experiment") -> "Experiment":
         assert isinstance(other, Experiment)
         return Experiment(self.specs + other.specs)
+
+    def __or__(self, other: "Experiment") -> "Experiment":
+        return self.union(other)
 
     def __mul__(self, other: "Experiment") -> "Experiment":
         assert isinstance(other, Experiment)
 
-        # every pair of specs should have disjoint keys
-        for x in self.specs:
-            for y in other.specs:
-                shared_keys = set(x.keys()).intersection(y.keys())
-                if len(shared_keys) > 0:
-                    raise RuntimeError(
-                        f"Keys are not disjoint in Experiment product: {shared_keys}"
-                    )
+        return Experiment([x | y for x in self.specs for y in other.specs])
 
-        return Experiment([Spec(x | y) for x in self.specs for y in other.specs])
-
-    def to_dicts(self) -> List[dict[str, Any]]:
-        """Convert the Experiment into a list of dictionaries.
-
-        Returns:
-            Iterable[dict[str, Any]]: list of dictionaries
-        """
-        return [spec.to_dict() for spec in self.specs]
+    def __iter__(self) -> Iterable[dict]:
+        return iter(self.specs)

@@ -1,8 +1,8 @@
-__all__ = ["Spec", "Experiment", "parse"]
+__all__ = ["Experiment", "parse"]
 
 import griddler.schemas.v03
 import griddler.schemas.v04
-from griddler.core import Experiment, Spec
+from griddler.core import Experiment
 
 
 def parse(griddle: dict) -> Experiment:
