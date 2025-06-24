@@ -2,7 +2,7 @@
 
 There is no common nomenclature for the problem griddler solves, so we [make up our own](https://xkcd.com/927/). There are 2 core concepts in griddler: the _Spec_ and the _Experiment_.
 
-A Spec is a collection of parameter values. Informally, it is a set of parameter name-value pairs. Typically, a Spec corresponds to the variables and other configuration required to specify and run a single simulation. One Spec can be _updated_ by another one, creating a new Spec with values from the updating Spec.
+A Spec is a set of parameter name-value pairs. Typically, a Spec corresponds to the variables and other configuration required to specify and run a single simulation. One Spec can be _updated_ by another one, creating a new Spec with values from the updating Spec.
 
 An Experiment is a set of Specs. An Experiment might include replicate simulations with different random seeds, simple grids of parameter values (hence, "griddler"), or more complex combinations of parameters. Experiments support two operations:
 
@@ -19,31 +19,23 @@ See the [API reference](api.md) for more details.
 
 ## Theory
 
-Mathematically speaking, Specs and their one operation form a non-communtative [monoid](https://en.wikipedia.org/wiki/Monoid), while Experiments and their two operations form a [semiring](https://en.wikipedia.org/wiki/Semiring). Specifically, a Spec $\vec{x} = (x_1, \ldots, x_N)$ is a [sequence](https://en.wikipedia.org/wiki/Sequence), where $N$ is the total number of parameters we will be interested in. ($N$ may be greater than the number of parameters with assigned values in any particular Spec.) The space of the $x_i$ includes all possible parameter values as well as an additional neutral element $0_M$. The $x_i$ have a single binary operation _update_ $\uparrow$ that returns the right element, unless that element is the neutral element:
+Mathematically speaking, Specs and their one operation form a non-communtative [monoid](https://en.wikipedia.org/wiki/Monoid), while Experiments and their two operations form a [semiring](https://en.wikipedia.org/wiki/Semiring).
+
+Specifically, a Spec is a set of name-value pairs, i.e., two-element [sequences](https://en.wikipedia.org/wiki/Sequence). Specs have a single, binary operation _update_ $\uparrow$ that adds the parameters in the right input to the left input, preferring the right value when the same name is present in both Specs. For two Specs $S$ and $T$,
 
 ```math
-x \uparrow y = \begin{cases}
-x & y = 0_M \\
-y & \text{otherwise}
-\end{cases}
+\begin{align*}
+S \uparrow T = &\{ (n, v) : (n, v) \in S \text{ and } n \in \pi(S) \backslash \pi(T) \} \\
+&\cup \{ (n, v) : (n, v) \in T \text{ and } n \notin \pi(S) \backslash \pi(T) \} \\
+\end{align*}
 ```
 
-(This operation is [null coalescence](https://en.wikipedia.org/wiki/Null_coalescing_operator) but with the order of inputs reversed.)
+where $\pi(\cdot)$ is the set of names in a Spec (i.e., the first [projection map](<https://en.wikipedia.org/wiki/Projection_(set_theory)>)) and $\backslash$ is set difference.
 
-Note the values and the operation $\uparrow$ form a monoid, not a [group](<https://en.wikipedia.org/wiki/Group_(mathematics)>), because the $\uparrow$ operation lacks an inverse (i.e., for all $x \neq 0_M$, there is no $x^{-1}$ such that $x \uparrow x^{-1} = 0_M$). Note also that this monoid is not commutative (i.e., $x \uparrow y = y \uparrow x$ only if $x = 0_M$ or $y = 0_M$).
+(The update operation is similar to [null coalescence](https://en.wikipedia.org/wiki/Null_coalescing_operator), which prefers the left value.)
 
-Specs have an analogous update operation that is the element application of the value-wise update operation:
+Specs and the update operation $\uparrow$ form a non-commutative monoid, not a [group](<https://en.wikipedia.org/wiki/Group_(mathematics)>), because the operation lacks an inverse (i.e., for all $x \neq \varnothing$, there is no $x^{-1}$ such that $x \uparrow x^{-1} = \varnothing$). Note also that this monoid is not commutative, since $x \uparrow y = y \uparrow x$ only if $x = \varnothing$ or $y = \varnothing$.
 
-```math
-\vec{x} \uparrow \vec{y} = (x_1 \uparrow y_1, \ldots, x_N \uparrow y_N)
-```
+An Experiment is a set of Specs, equipped with two operations: _union_ $\cap$, which is just the union of the constituent sets of Specs, and _product_ $\otimes$, analogous to Cartesian product. For two experiments $X$ and $Y$, define $X \otimes Y = \{S \uparrow T : S \in X, T \in Y\}$.
 
-Thus, Specs and their $\uparrow$ operator also form a non-commutative monoid.
-
-In the Python implementation, Specs are implemented as dictionaries. Dictionaries are indexed by parameter names rather than integers $i$ to index the values, and the neutral element $0_M$ is represented by the absence of that key from the dictionary.
-
-An Experiment is a set of Specs, equipped with two operations: _union_ $\cap$, which is just the union of the sets of Specs, and _product_ $\otimes$, analogous to Cartesian product. For two experiments $X$ and $Y$, define $X \otimes Y = \{\vec{x} \uparrow \vec{y} : \vec{x} \in X, \vec{y} \in Y\}$.
-
-Experiments and their operations form a semiring. Union $\cap$ is a commutative monoid, whose identity element is the empty Experiment $\varnothing$ (i.e., a set of no Specs at all). Product $\otimes$ is a monoid with identity element $\{ (0_M, \ldots, 0_M) \}$ (i.e., an Experiment consisting of a single, totally unspecified Spec).
-
-Note that, similar to a ring, product $\otimes$ is commutative, and product with the union identity $\varnothing$ always returns that identity, that is, $X \otimes \varnothing = \varnothing \otimes X = \varnothing$ for any Experiment $X$.
+Experiments and their operations form a semiring. Union $\cap$ is a commutative monoid whose identity element is the empty Experiment $\varnothing$ (i.e., a set of no Specs at all). Product $\otimes$ is a non-commutative monoid with identity element $\{ \varnothing \}$ (i.e., an Experiment consisting of a single empty Spec). Note that the union identity $\varnothing$ is an absorbing element under the product operation: $X \otimes \varnothing = \varnothing \otimes X = \varnothing$ for any Experiment $X$.
