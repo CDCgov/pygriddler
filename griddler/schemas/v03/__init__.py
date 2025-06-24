@@ -4,7 +4,7 @@ from typing import Any
 
 import jsonschema
 
-from griddler.core import Experiment, Spec
+from griddler.core import Experiment
 
 
 def load_schema() -> dict:
@@ -34,8 +34,8 @@ def _parse_parameters(parameters: dict[str, Any]) -> Experiment:
     dependent_keys = [key for key, value in parameters.items() if "if" in value]
     independent_keys = list(set(parameters.keys()) - set(dependent_keys))
 
-    # start with an empty experiment
-    ex = Experiment([Spec({})])
+    # start with an experiment with an empty Spec
+    ex = Experiment([dict()])
 
     # call everything a bundle at first
     for bundle_name in independent_keys + dependent_keys:
@@ -53,7 +53,7 @@ def _parse_parameters(parameters: dict[str, Any]) -> Experiment:
                     f"Fixed parameter '{bundle_name}' has impermissible keys: {bad_names}"
                 )
 
-            fix_ex = Experiment([Spec({bundle_name: bundle_value["fix"]})])
+            fix_ex = Experiment([{bundle_name: bundle_value["fix"]}])
             ex = _conditional_product(ex, fix_ex, condition)
         elif "vary" in bundle_value:
             if bad_names := set(bundle_value.keys()) - {"vary", "if", "comment"}:
@@ -61,7 +61,7 @@ def _parse_parameters(parameters: dict[str, Any]) -> Experiment:
                     f"Varying parameter '{bundle_name}' has impermissible keys: {bad_names}"
                 )
 
-            vary_ex = Experiment([Spec({bundle_name: x}) for x in bundle_value["vary"]])
+            vary_ex = Experiment([{bundle_name: x} for x in bundle_value["vary"]])
             ex = _conditional_product(ex, vary_ex, condition)
         else:
             # this is a bundle
@@ -81,7 +81,7 @@ def _parse_parameters(parameters: dict[str, Any]) -> Experiment:
             # of those parameters are matched within the Spec
             bundle_ex = Experiment(
                 [
-                    Spec({k: bundle_value[k][i] for k in bundle_value.keys()})
+                    {k: bundle_value[k][i] for k in bundle_value.keys()}
                     for i in range(bundle_len)
                 ]
             )
@@ -117,11 +117,11 @@ def _conditional_product(
         return (match_left * right) | unmatch_left
 
 
-def _if_match(spec: Spec, condition: dict[str, Any]) -> bool:
+def _if_match(spec: dict[str, Any], condition: dict[str, Any]) -> bool:
     """Check if a Spec matches a condition.
 
     Args:
-        spec (Spec): The Spec to check.
+        spec (dict[str, Any]): The Spec to check.
         condition (dict[str, Any]): The condition to match against.
 
     Returns:
