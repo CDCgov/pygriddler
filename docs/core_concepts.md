@@ -19,7 +19,7 @@ See the [API reference](api.md) for more details.
 
 ## Theory
 
-Mathematically speaking, Specs and their one operation form a non-communtative [monoid](https://en.wikipedia.org/wiki/Monoid), while Experiments and their two operations form a [semiring](https://en.wikipedia.org/wiki/Semiring).
+### Specs
 
 Specifically, a Spec is a set of name-value pairs, i.e., two-element [sequences](https://en.wikipedia.org/wiki/Sequence). Specs have a single, binary operation _update_ $\uparrow$ that adds the parameters in the right input to the left input, preferring the right value when the same name is present in both Specs. For two Specs $S$ and $T$,
 
@@ -34,8 +34,10 @@ where $\pi(\cdot)$ is the set of names in a Spec (i.e., the first [projection ma
 
 (The update operation is similar to [null coalescence](https://en.wikipedia.org/wiki/Null_coalescing_operator), which prefers the left value.)
 
-Specs and the update operation $\uparrow$ form a non-commutative monoid, not a [group](<https://en.wikipedia.org/wiki/Group_(mathematics)>), because the operation lacks an inverse (i.e., for all $x \neq \varnothing$, there is no $x^{-1}$ such that $x \uparrow x^{-1} = \varnothing$). Note also that this monoid is not commutative, since $x \uparrow y = y \uparrow x$ only if $x = \varnothing$ or $y = \varnothing$.
+Specs and the update operation $\uparrow$ form a monoid because there is an identity element (i.e., the empty set $\varnothing$) and the operation is associative. Note that Specs are not commutative: the order of the inputs matters.
+
+### Experiments
 
 An Experiment is a set of Specs, equipped with two operations: _union_ $\cap$, which is just the union of the constituent sets of Specs, and _product_ $\otimes$, analogous to Cartesian product. For two experiments $X$ and $Y$, define $X \otimes Y = \{S \uparrow T : S \in X, T \in Y\}$.
 
-Experiments and their operations form a semiring. Union $\cap$ is a commutative monoid whose identity element is the empty Experiment $\varnothing$ (i.e., a set of no Specs at all). Product $\otimes$ is a non-commutative monoid with identity element $\{ \varnothing \}$ (i.e., an Experiment consisting of a single empty Spec). Note that the union identity $\varnothing$ is an absorbing element under the product operation: $X \otimes \varnothing = \varnothing \otimes X = \varnothing$ for any Experiment $X$.
+Experiments and their two operations form a [semiring](https://en.wikipedia.org/wiki/Semiring). Union $\cap$ is a commutative monoid whose identity element is the empty Experiment $\varnothing$ (i.e., a set of no Specs at all). Product $\otimes$ is a non-commutative monoid with identity element $\{ \varnothing \}$ (i.e., an Experiment consisting of a single empty Spec). Note that the union identity $\varnothing$ is an absorbing element under the product operation: $X \otimes \varnothing = \varnothing \otimes X = \varnothing$ for any Experiment $X$.
