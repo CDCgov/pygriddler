@@ -2,7 +2,18 @@ import pytest
 import yaml
 
 from griddler import parse
-from griddler.schemas.v01 import _match_nest
+from griddler.schemas.v01 import _get_match, _is_match
+
+
+def test_baseline_only():
+    griddle = yaml.safe_load("""
+    schema: v0.1
+    baseline_parameters:
+      R0: 1.5
+      gamma: 2.0
+    """)
+
+    assert parse(griddle).to_dicts() == [{"R0": 1.5, "gamma": 2.0}]
 
 
 def test_grid_only():
@@ -21,36 +32,31 @@ def test_grid_only():
 
 
 def test_match_nest():
-    param_sets = [{"scenario": "optimistic"}, {"scenario": "pessimistic"}]
+    nests = [{"scenario": "optimistic", "R0": 0.5}]
+
+    assert _get_match(param_set={"scenario": "optimistic"}, nests=nests) == 0
 
     assert (
-        _match_nest(nest={"scenario": "optimistic", "R0": 0.5}, param_sets=param_sets)
-        == 0
+        _get_match(param_set={"scenario": "pessimistic", "R0": 1.5}, nests=nests)
+        is None
     )
-
-    assert (
-        _match_nest(nest={"scenario": "pessimistic", "R0": 1.5}, param_sets=param_sets)
-        == 1
-    )
-
-
-def test_match_nest_no_match():
-    with pytest.raises(RuntimeError, match="does not match any parameter set"):
-        _match_nest(
-            nest={"scenario": "baseline", "R0": 1.0},
-            param_sets=[{"scenario": "optimistic"}, {"scenario": "pessimistic"}],
-        )
 
 
 def test_match_nest_multiple_matches():
     with pytest.raises(RuntimeError, match="matches multiple of"):
-        _match_nest(
-            nest={"scenario": "optimistic", "gamma": 2.0},
-            param_sets=[
-                {"scenario": "optimistic", "R0": 0.5},
-                {"scenario": "optimistic", "R0": 1.0},
+        _get_match(
+            param_set={"scenario": "optimistic", "R0": 0.5},
+            nests=[
+                {"scenario": "optimistic", "gamma": 2.0},
+                {"scenario": "pessimistic", "R0": 0.5},
             ],
         )
+
+
+def test_is_match():
+    assert _is_match({"a": 1, "b": 2}, {"a": 1, "c": 3}) is True
+    assert _is_match({"a": 1, "b": 2}, {"a": 2, "c": 3}) is False
+    assert _is_match({}, {"a": 1}) is False
 
 
 def test_baseline_grid_nested():
@@ -74,4 +80,33 @@ def test_baseline_grid_nested():
         {"scenario": "baseline", "R0": 1.0},
         {"scenario": "optimistic", "R0": 0.5},
         {"scenario": "pessimistic", "R0": 2.0},
+    ]
+
+
+def test_multiple_grid_nested():
+    griddle = yaml.safe_load("""
+    schema: v0.1
+
+    baseline_parameters:
+      R0: 1.0
+
+    grid_parameters:
+      scenario: [baseline, optimistic, pessimistic]
+      gamma: [0.1, 0.2]
+
+    nested_parameters:
+      - scenario: optimistic
+        R0: 0.5
+      - scenario: pessimistic
+        R0: 2.0
+    """)
+
+    parameter_sets = parse(griddle).to_dicts()
+    assert parameter_sets == [
+        {"scenario": "baseline", "R0": 1.0, "gamma": 0.1},
+        {"scenario": "baseline", "R0": 1.0, "gamma": 0.2},
+        {"scenario": "optimistic", "R0": 0.5, "gamma": 0.1},
+        {"scenario": "optimistic", "R0": 0.5, "gamma": 0.2},
+        {"scenario": "pessimistic", "R0": 2.0, "gamma": 0.1},
+        {"scenario": "pessimistic", "R0": 2.0, "gamma": 0.2},
     ]

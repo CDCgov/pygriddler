@@ -314,7 +314,7 @@ There are _grid_ parameters. Each grid parameter is a name and a list of values.
 
 Then, any _baseline_ parameters are added. These are essentially grid parameters, but with only a single value.
 
-Finally, _nested_ parameters are added. Each _nest_ is a parameter set. Every nest should _match_ exactly one of the gridded parameter sets. A nest matches is the two parameter sets have any parameter name-value pairs in common.
+Finally, _nested_ parameters are added. Each _nest_ is itself a parameter set. Every gridded parameter set should _match_ exactly zero or one of the nests. A gridded parameter set and a nest matches if the they have at least one parameter name-value pair in common.
 
 For example:
 

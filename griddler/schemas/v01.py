@@ -46,37 +46,35 @@ def parse(griddle: dict) -> Experiment:
 
     # find where nested values will get merged, if they are present
     if "nested_parameters" in griddle:
-        for nest in griddle["nested_parameters"]:
-            m = _match_nest(nest, param_sets)
-            param_sets[m] |= nest
+        for ps in param_sets:
+            m = _get_match(ps, griddle["nested_parameters"])
+            if m is not None:
+                ps |= griddle["nested_parameters"][m]
 
     return Experiment([Spec(ps) for ps in param_sets])
 
 
-def _match_nest(nest: dict, param_sets: Iterable[dict]) -> int:
-    """Which parameter set does this nest match to?"""
-    matches = [_match_nest1(nest, ps) for ps in param_sets]
-    n_matches = matches.count(True)
-    if n_matches == 0:
-        raise RuntimeError(
-            f"Nest {nest} does not match any parameter set in {param_sets}"
-        )
-    elif n_matches == 1:
-        return matches.index(True)
-    else:
-        raise RuntimeError(f"Nest {nest} matches multiple of {param_sets}")
-
-
-def _match_nest1(nest: dict, param_set: dict) -> bool:
+def _get_match(param_set: dict, nests: Iterable[dict]) -> int | None:
     """
-    Does this nest match this parameter set?
+    Which nest(s) does this parameter set match to?
 
-    A nest matches a parameter set if there is at least one parameter name-value
-    combination in common.
+    Returns: Index of the matching nest, or None if no match.
     """
-    common_keys = nest.keys() & param_set.keys()
-    return (
-        any(nest[key] == param_set[key] for key in common_keys)
-        if common_keys
-        else False
-    )
+    matches = [_is_match(param_set, nest) for nest in nests]
+
+    match matches.count(True):
+        case 0:
+            return None
+        case 1:
+            return matches.index(True)
+        case _:
+            raise RuntimeError(f"Parameter set {param_set} matches multiple of {nests}")
+
+
+def _is_match(x: dict, y: dict) -> bool:
+    """
+    Do these two parameter sets "match," i.e., do they have at least one parameter
+    name-value pair in common?
+    """
+    common_keys = x.keys() & y.keys()
+    return any(x[key] == y[key] for key in common_keys) if common_keys else False
