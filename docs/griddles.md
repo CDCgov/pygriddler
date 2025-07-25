@@ -307,3 +307,32 @@ This produces 4 parameter sets. Note that `"beach_town"` is only present when `"
 ### v0.2
 
 The v0.2 syntax is described in [historical docs](https://github.com/CDCgov/pygriddler/blob/v0.2/docs/griddle.md). It is not currently supported.
+
+### v0.1
+
+There are _grid_ parameters. Each grid parameter is a name and a list of values. The output parameter sets are first formed by first taking the Cartesian product over those parameters.
+
+Then, any _baseline_ parameters are added. These are essentially grid parameters, but with only a single value.
+
+Finally, _nested_ parameters are added. Each _nest_ is a parameter set. Every nest should _match_ exactly one of the gridded parameter sets. A nest matches is the two parameter sets have any parameter name-value pairs in common.
+
+For example:
+
+```yaml
+schema: v0.1
+
+baseline_parameters:
+  R0: 1.0
+
+grid_parameters:
+  scenario: [baseline, pessimistic, optimistic]
+  gamma: [1.0, 2.0]
+
+nested_parameters:
+  - scenario: pessimistic
+    R0: 1.5
+  - scenario: optimistic
+    R0: 0.75
+```
+
+will produce 6 parameter sets, one for each combination of `scenario` and `gamma`, with a value for `R0` that is either drawn from the baseline (for the baseline scenario) or from the nests.

@@ -48,31 +48,19 @@ def parse(griddle: dict) -> Experiment:
     if "nested_parameters" in griddle:
         for nest in griddle["nested_parameters"]:
             m = _match_nest(nest, param_sets)
-            if m is None:
-                raise RuntimeError(
-                    f"Nest {nest} does not match any parameter set in {param_sets}"
-                )
-            else:
-                param_sets[m] |= nest
-
-    # update the nested values, if nests were present
-    for ps_i, nest in ps_nest_map.items():
-        if ps_i is None:
-            raise RuntimeError(
-                f"Nest {nest} does not match any parameter set in {param_sets}"
-            )
-        else:
-            param_sets[ps_i] |= nest
+            param_sets[m] |= nest
 
     return Experiment([Spec(ps) for ps in param_sets])
 
 
-def _match_nest(nest: dict, param_sets: Iterable[dict]) -> int | None:
+def _match_nest(nest: dict, param_sets: Iterable[dict]) -> int:
     """Which parameter set does this nest match to?"""
     matches = [_match_nest1(nest, ps) for ps in param_sets]
     n_matches = matches.count(True)
     if n_matches == 0:
-        return None
+        raise RuntimeError(
+            f"Nest {nest} does not match any parameter set in {param_sets}"
+        )
     elif n_matches == 1:
         return matches.index(True)
     else:
@@ -80,8 +68,15 @@ def _match_nest(nest: dict, param_sets: Iterable[dict]) -> int | None:
 
 
 def _match_nest1(nest: dict, param_set: dict) -> bool:
-    """Does this nest match this parameter set?"""
+    """
+    Does this nest match this parameter set?
+
+    A nest matches a parameter set if there is at least one parameter name-value
+    combination in common.
+    """
     common_keys = nest.keys() & param_set.keys()
-    nest_subset = {key: nest[key] for key in common_keys}
-    param_subset = {key: param_set[key] for key in common_keys}
-    return nest_subset == param_subset
+    return (
+        any(nest[key] == param_set[key] for key in common_keys)
+        if common_keys
+        else False
+    )
