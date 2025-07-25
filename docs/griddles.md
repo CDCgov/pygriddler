@@ -310,11 +310,11 @@ The v0.2 syntax is described in [historical docs](https://github.com/CDCgov/pygr
 
 ### v0.1
 
-There are _grid_ parameters. Each grid parameter is a name and a list of values. The output parameter sets are first formed by first taking the Cartesian product over those parameters.
+There are _grid_ parameters. Each grid parameter is a name and a list of values. The Specs are first formed by first taking the product over those parameters.
 
 Then, any _baseline_ parameters are added. These are essentially grid parameters, but with only a single value.
 
-Finally, _nested_ parameters are added. Each _nest_ is itself a parameter set. Every gridded parameter set should _match_ exactly zero or one of the nests. A gridded parameter set and a nest matches if the they have at least one parameter name-value pair in common.
+Finally, _nested_ parameters are added. Each _nest_ is itself a Spec. Every gridded Spec should _match_ exactly zero or one of the nest Specs. A gridded Spec and a nest match Spec if the they have at least one parameter name-value pair in common.
 
 For example:
 
@@ -335,4 +335,4 @@ nested_parameters:
     R0: 0.75
 ```
 
-will produce 6 parameter sets, one for each combination of `scenario` and `gamma`, with a value for `R0` that is either drawn from the baseline (for the baseline scenario) or from the nests.
+will produce 6 Specs, one for each combination of `scenario` and `gamma`, with a value for `R0` that is either drawn from the baseline (for the baseline scenario) or from the nests.

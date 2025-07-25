@@ -13,7 +13,7 @@ def test_baseline_only():
       gamma: 2.0
     """)
 
-    assert parse(griddle).to_dicts() == [{"R0": 1.5, "gamma": 2.0}]
+    assert parse(griddle).specs == [{"R0": 1.5, "gamma": 2.0}]
 
 
 def test_grid_only():
@@ -23,7 +23,7 @@ def test_grid_only():
       R0: [1.0, 2.0]
       gamma: [1.0, 2.0]
     """)
-    assert parse(griddle).to_dicts() == [
+    assert parse(griddle).specs == [
         {"R0": 1.0, "gamma": 1.0},
         {"R0": 1.0, "gamma": 2.0},
         {"R0": 2.0, "gamma": 1.0},
@@ -76,7 +76,7 @@ def test_baseline_grid_nested():
         R0: 2.0
     """)
 
-    assert parse(griddle).to_dicts() == [
+    assert parse(griddle).specs == [
         {"scenario": "baseline", "R0": 1.0},
         {"scenario": "optimistic", "R0": 0.5},
         {"scenario": "pessimistic", "R0": 2.0},
@@ -101,7 +101,7 @@ def test_multiple_grid_nested():
         R0: 2.0
     """)
 
-    parameter_sets = parse(griddle).to_dicts()
+    parameter_sets = parse(griddle).specs
     assert parameter_sets == [
         {"scenario": "baseline", "R0": 1.0, "gamma": 0.1},
         {"scenario": "baseline", "R0": 1.0, "gamma": 0.2},

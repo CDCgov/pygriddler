@@ -1,7 +1,7 @@
 import itertools
 from collections.abc import Iterable
 
-from griddler.core import Experiment, Spec
+from griddler.core import Experiment
 
 
 def _validate(griddle: dict) -> None:
@@ -60,12 +60,12 @@ def parse(griddle: dict) -> Experiment:
                 *[nests[i] for i in unmatched_nest_idx],
             )
 
-    return Experiment([Spec(ps) for ps in param_sets])
+    return Experiment(param_sets)
 
 
 def _get_match(param_set: dict, nests: Iterable[dict]) -> int | None:
     """
-    Which nest(s) does this parameter set match to?
+    Which nest(s) does this parameter set (i.e., Spec) match to?
 
     Returns: Index of the matching nest, or None if no match.
     """
