@@ -46,10 +46,19 @@ def parse(griddle: dict) -> Experiment:
 
     # find where nested values will get merged, if they are present
     if "nested_parameters" in griddle:
+        nests = griddle["nested_parameters"]
+        unmatched_nest_idx = set(range(len(nests)))
         for ps in param_sets:
-            m = _get_match(ps, griddle["nested_parameters"])
+            m = _get_match(ps, nests)
             if m is not None:
-                ps |= griddle["nested_parameters"][m]
+                ps |= nests[m]
+                unmatched_nest_idx -= {m}
+
+        if unmatched_nest_idx:
+            raise RuntimeError(
+                "Nests do not match any parameter sets: ",
+                *[nests[i] for i in unmatched_nest_idx],
+            )
 
     return Experiment([Spec(ps) for ps in param_sets])
 

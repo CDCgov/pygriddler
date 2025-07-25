@@ -110,3 +110,19 @@ def test_multiple_grid_nested():
         {"scenario": "pessimistic", "R0": 2.0, "gamma": 0.1},
         {"scenario": "pessimistic", "R0": 2.0, "gamma": 0.2},
     ]
+
+
+def test_unmatched_nests():
+    griddle = yaml.safe_load("""
+    schema: v0.1
+
+    grid_parameters:
+      scenario: [baseline, optimistic]
+
+    nested_parameters:
+      - scenario: pessimistic
+        R0: 1.5
+    """)
+
+    with pytest.raises(RuntimeError, match="do not match any parameter sets"):
+        parse(griddle)
