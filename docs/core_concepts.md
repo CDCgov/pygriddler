@@ -46,19 +46,18 @@ Experiments and their two operations form a [semiring](https://en.wikipedia.org/
 
 Informally, the "conditional" parameters in the v0.3 schema "filter" for parts of the Experiment and add new parameters in those situations.
 
-Formally, define the match operation $\chi$ on Specs: one Spec _matches_ another if updating the one Spec with the other would have no effect:
+Formally, conditional parameters require partitioning an Experiment into two parts. Each conditional parameter Spec $P$ is associated with a subset $Z$ of Specs in the experiment $X$. Adding a conditional parameter means taking the product of $P$ with this subset of $X$, keeping the other subsets of $X$ unchanged:
 
-```math
-\chi(S, T) = \begin{cases}
-1 & S \uparrow T = S \\
-0 & \text{otherwise}
-\end{cases}
-```
+$$
+(Z \otimes P) \cup (X \setminus Z)
+$$
 
-Let $P$ be the Spec that specifies the parameters that are to be added to the Experiment $X$ according to the matching Spec $M$. Then the operation of adding a conditional parameter is:
+In the v0.3 schema, the subset $Z$ are those Specs that "match" some spec $M$:
 
-```math
-[\{ x \in X : \chi(x, M) = 1 \} \otimes P]
-\cup
-\{ x \in X : \chi(x, M) = 0 \}
-```
+$$
+z \in Z \iff z \uparrow M = z
+$$
+
+In other words, $Z$ consists of those Specs that have that same name-value pairs that are in $M$.
+
+In principle, the subset $Z$ could be defined by any predicate function, not just "matching."
