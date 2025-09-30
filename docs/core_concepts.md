@@ -41,3 +41,23 @@ Specs and the update operation $\uparrow$ form a monoid because there is an iden
 An Experiment is a set of Specs, equipped with two operations: _union_ $\cap$, which is just the union of the constituent sets of Specs, and _product_ $\otimes$, analogous to Cartesian product. For two experiments $X$ and $Y$, define $X \otimes Y = \{S \uparrow T : S \in X, T \in Y\}$.
 
 Experiments and their two operations form a [semiring](https://en.wikipedia.org/wiki/Semiring). Union $\cap$ is a commutative monoid whose identity element is the empty Experiment $\varnothing$ (i.e., a set of no Specs at all). Product $\otimes$ is a non-commutative monoid with identity element $\{ \varnothing \}$ (i.e., an Experiment consisting of a single empty Spec). Note that the union identity $\varnothing$ is an absorbing element under the product operation: $X \otimes \varnothing = \varnothing \otimes X = \varnothing$ for any Experiment $X$.
+
+### Conditional parameters
+
+Informally, the "conditional" parameters in the v0.3 schema "filter" for parts of the Experiment and add new parameters in those situations.
+
+Formally, conditional parameters require partitioning an Experiment into two parts. Each conditional parameter Spec $P$ is associated with a subset $Z$ of Specs in the experiment $X$. Adding a conditional parameter means taking the product of $P$ with this subset of $X$, keeping the other subsets of $X$ unchanged:
+
+$$
+(Z \otimes P) \cup (X \setminus Z)
+$$
+
+In the v0.3 schema, the subset $Z$ are those Specs that "match" some spec $M$:
+
+$$
+z \in Z \iff z \uparrow M = z
+$$
+
+In other words, $Z$ consists of those Specs that have that same name-value pairs that are in $M$.
+
+In principle, the subset $Z$ could be defined by any predicate function, not just "matching."
