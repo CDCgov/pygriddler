@@ -46,21 +46,19 @@ Experiments and their two operations form a [semiring](https://en.wikipedia.org/
 
 Informally, the "conditional" parameters in the v0.3 schema "filter" for parts of the Experiment and add new parameters in those situations.
 
-Formally, define the match function:
+Formally, define the match operation $\chi$ on Specs: one Spec _matches_ another if updating the one Spec with the other would have no effect:
 
 ```math
-\chi(\vec{x}, \vec{y}) = \begin{cases}
-1 & \vec{x} \uparrow \vec{y} = \vec{x} \\
+\chi(S, T) = \begin{cases}
+1 & S \uparrow T = S \\
 0 & \text{otherwise}
 \end{cases}
 ```
 
-That is, $\vec{y}$ matches $\vec{x}$ if updating $\vec{x}$ with $\vec{y}$ would have no effect, or, in other words, if all the defined (i.e., non-neutral) elements of $\vec{y}$ are equal to the corresponding values in $\vec{x}$.
-
-Let $\vec{p}$ be the Spec that specifies the parameters that are to be added to the Experiment according to the matching Spec $\vec{m}$. Then the operation of adding a conditional parameter is:
+Let $P$ be the Spec that specifies the parameters that are to be added to the Experiment $X$ according to the matching Spec $M$. Then the operation of adding a conditional parameter is:
 
 ```math
-[\{ \vec{x} \in X : \chi(\vec{x}, \vec{m}) = 1 \} \otimes \vec{p}]
+[\{ x \in X : \chi(x, M) = 1 \} \otimes P]
 \cup
-\{ \vec{x} \in X : \chi(\vec{x}, \vec{m}) = 0 \}
+\{ x \in X : \chi(x, M) = 0 \}
 ```
