@@ -37,7 +37,7 @@ For complex experiments, you might want to write a Python file that manipulates 
 
 For simpler experiments, griddler supports multiple _griddle_ schemas. A griddle is a human-written file, usually a YAML or JSON, that contains some metadata and then whatever is needed to uniquely specify the experiment. See the [griddle](docs/griddles.md) for more details.
 
-In the `v0.4` schema, the trivial example is:
+Griddler supports multiple schemas. In the `v0.4` schema, the trivial example is:
 
 ```yaml
 schema: v0.4
@@ -114,6 +114,8 @@ which produces multiple outputs:
 Scott Olesen <ulp7@cdc.gov> (CDC/IOD/ORR/CFA)
 
 ## Changelog
+
+- v0.4: Breaking change. Griddler's version is now no longer tied to the schemas, which can evolve independently.
 
 See the [repo releases](https://github.com/CDCgov/pygriddler/releases).
 
