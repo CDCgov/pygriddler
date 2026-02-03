@@ -2,7 +2,7 @@
 
 Griddles are the main functionality of griddle. Read about the [griddle schema](griddles.md) to learn more about the format.
 
-## Getting started 
+## Getting started
 
 ### Command-line usage
 
@@ -44,4 +44,3 @@ parameter_sets = griddle.parse()
 ```
 
 See the [API reference](api.md) for specifics on griddler's internals.
-
