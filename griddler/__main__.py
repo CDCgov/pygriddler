@@ -7,9 +7,9 @@ import yaml
 import griddler
 
 
-def main(args):
+def main(args=None):
     parser = argparse.ArgumentParser(
-        prog="python -m griddler",
+        prog="griddler",
         description="Parse a griddle into a list of dictionaries.",
     )
 
