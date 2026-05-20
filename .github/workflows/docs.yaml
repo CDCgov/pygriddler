@@ -1,4 +1,4 @@
-name: mkdocs
+name: docs
 on:
   pull_request:
   push:
@@ -27,8 +27,9 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version-file: ".python-version"
+      # ensure that all groups, including optional ones, are synced
       - run: uv sync --locked --all-extras --all-groups
-      - run: uv run mkdocs build --strict
+      - run: uv run zensical build --strict
       - uses: actions/upload-pages-artifact@v4
         with:
           name: github-pages
