@@ -12,12 +12,12 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "mkdocs>=1.6.0,<2",
-    "mkdocstrings[python]>=0.25.1,<0.26",
-    "mkdocs-material>=9.5.28,<10",
-    "mkdocstrings-python>=1.10.5,<2",
-    "mdx-truly-sane-lists~=1.3",
     "pytest>=8.3.3,<9",
+]
+docs = [
+    "mdx-truly-sane-lists~=1.3",
+    "mkdocstrings-python>=1.10.5,<2",
+    "zensical>=0.0.43",
 ]
 
 [build-system]
