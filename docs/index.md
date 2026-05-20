@@ -28,7 +28,7 @@ Use the `--help` flag for more details.
 You can also directly generate a griddle directly in Python:
 
 ```bash
-uv add git+https://github.com/cdcgov/griddler.git
+uv add git+https://github.com/cdcgov/pygriddler.git
 ```
 
 ```python
