@@ -4,7 +4,7 @@ site_url = "https://CDCgov.github.io/pygriddler"
 repo_url = "https://github.com/CDCgov/pygriddler"
 repo_name = "pygriddler"
 
-nav = ["index.md", "migrating_from_mkdocs.md", "example.md", "api.md"]
+nav = ["index.md", "core_concepts.md", "griddles.md", "api.md"]
 
 # provides for math rendering
 extra_javascript = ["https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"]
