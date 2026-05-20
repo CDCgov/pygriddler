@@ -12,7 +12,7 @@ griddle definition and writes the expanded parameter sets as JSON.
 You can install it from GitHub with `uv` or another git-backed package maanger:
 
 ```bash
-uv tool install git+https://github.com/cdcgov/griddler.git
+uv tool install git+https://github.com/cdcgov/pygriddler.git
 ```
 
 Example usage:
