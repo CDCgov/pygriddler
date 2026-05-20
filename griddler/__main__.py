@@ -7,9 +7,9 @@ import yaml
 import griddler
 
 
-def main(args):
+def main(args=None):
     parser = argparse.ArgumentParser(
-        prog="python -m griddler",
+        prog="griddler",
         description="Parse a griddle into a list of dictionaries.",
     )
 
@@ -51,6 +51,11 @@ def main(args):
     )
 
     args = parser.parse_args(args)
+
+    # Show help if no args are provided
+    if args.input is sys.stdin and sys.stdin.isatty():
+        parser.print_help()
+        sys.exit(1)
 
     if args.from_ == "yaml":
         raw = yaml.safe_load(args.input)
