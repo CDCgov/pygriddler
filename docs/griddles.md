@@ -8,7 +8,9 @@ Every griddle must have the keyword `"schema"` and an associated string value th
 
 The currently-supported griddle schemas are:
 
-- v0.4
+- [v0.4](#v04)
+- [v0.3](#v03)
+- [v0.1](#v01)
 
 ## Schemas
 

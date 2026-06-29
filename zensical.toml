@@ -7,7 +7,10 @@ repo_name = "pygriddler"
 nav = ["index.md", "core_concepts.md", "griddles.md", "api.md"]
 
 # provides for math rendering
-extra_javascript = ["https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"]
+extra_javascript = [
+    "javascripts/mathjax.js",
+    "https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js",
+]
 
 [project.theme]
 language = "en"
@@ -79,3 +82,4 @@ paths = ["."]
 docstring_style = "google"
 inherited_members = true
 show_source = false
+filters = ["ALL"]
