@@ -23,12 +23,12 @@ See the [API reference](api.md) for more details.
 
 Specifically, a Spec is a set of name-value pairs, i.e., two-element [sequences](https://en.wikipedia.org/wiki/Sequence). Specs have a single, binary operation _update_ $\uparrow$ that adds the parameters in the right input to the left input, preferring the right value when the same name is present in both Specs. For two Specs $S$ and $T$,
 
-```math
+$$
 \begin{align*}
 S \uparrow T = &\{ (n, v) : (n, v) \in S \text{ and } n \in \pi(S) \backslash \pi(T) \} \\
 &\cup \{ (n, v) : (n, v) \in T \text{ and } n \notin \pi(S) \backslash \pi(T) \} \\
 \end{align*}
-```
+$$
 
 where $\pi(\cdot)$ is the set of names in a Spec (i.e., the first [projection map](<https://en.wikipedia.org/wiki/Projection_(set_theory)>)) and $\backslash$ is set difference.
 

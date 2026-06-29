@@ -17,6 +17,7 @@ class Experiment:
         return f"Experiment([{spec_str}])"
 
     def union(self, other: "Experiment") -> "Experiment":
+        """ "Add" two experiments"""
         assert isinstance(other, Experiment)
         return Experiment(self.specs + other.specs)
 
@@ -24,6 +25,7 @@ class Experiment:
         return self.union(other)
 
     def __mul__(self, other: "Experiment") -> "Experiment":
+        """ "Multiply" two experiments"""
         assert isinstance(other, Experiment)
 
         return Experiment([x | y for x in self.specs for y in other.specs])
