@@ -113,12 +113,6 @@ which produces multiple outputs:
 
 Scott Olesen <ulp7@cdc.gov> (CDC/IOD/ORR/CFA)
 
-## Changelog
-
-- v0.4: Breaking change. Griddler's version is now no longer tied to the schemas, which can evolve independently.
-
-See the [repo releases](https://github.com/CDCgov/pygriddler/releases).
-
 ---
 
 ## General Disclaimer
