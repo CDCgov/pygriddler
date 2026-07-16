@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Fixed
+
+- v0.4 parser no longer raises an opaque `TypeError` on an empty `union` or `product`. An empty union now yields the empty experiment and an empty product yields a single empty spec, matching each operator's identity.
+
 ## 0.4.0
 
 ### Added
