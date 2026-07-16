@@ -39,9 +39,13 @@ def _parse_experiment(x: list[dict[str, Any]] | dict[str, Any]) -> Experiment:
         assert isinstance(value, list)
         subexperiments = [_parse_experiment(elt) for elt in value]
         if key == "union":
-            return functools.reduce(lambda x, y: x | y, subexperiments)
+            # empty union is the empty experiment (identity for union)
+            return functools.reduce(lambda x, y: x | y, subexperiments, Experiment([]))
         elif key == "product":
-            return functools.reduce(lambda x, y: x * y, subexperiments)
+            # empty product is a single empty spec (identity for product)
+            return functools.reduce(
+                lambda x, y: x * y, subexperiments, Experiment([{}])
+            )
         else:
             raise RuntimeError(f"Unknown experiment key: {key}")
     else:
