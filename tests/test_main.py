@@ -4,6 +4,7 @@ import io
 import pytest
 
 import griddler.__main__
+from griddler import parse
 
 
 def test_cli_help():
@@ -16,3 +17,14 @@ def test_cli_help():
 
     # Check that the output contains expected strings
     assert "usage" in result
+
+
+def test_can_iter():
+    """Test that the main function can be iterated over"""
+    griddle = {"schema": "v0.4", "experiment": [{"R0": 1.5}, {"R0": 2.5}]}
+
+    i = 0
+    for _ in parse(griddle):
+        i += 1
+
+    assert i == 2

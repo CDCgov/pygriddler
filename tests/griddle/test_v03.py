@@ -9,7 +9,7 @@ from griddler import parse
 def text_to_dicts(text: str) -> list[dict[str, Any]]:
     """Convert a YAML text to a list of dictionaries."""
     data = yaml.safe_load(text)
-    return parse(data).specs
+    return list(parse(data))
 
 
 def test_simple():
