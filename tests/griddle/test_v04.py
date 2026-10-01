@@ -56,6 +56,14 @@ class TestParse:
             {"R0": 2.5, "gamma": 2.0},
         ]
 
+    def test_empty_union(self):
+        # an empty union is the identity for union: the empty experiment
+        assert self.parse_experiment({"union": []}) == []
+
+    def test_empty_product(self):
+        # an empty product is the identity for product: a single empty spec
+        assert self.parse_experiment({"product": []}) == [{}]
+
     def test_nested1(self):
         expt = {
             "product": [
