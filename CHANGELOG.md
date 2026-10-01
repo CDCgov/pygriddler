@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 
 - v0.4 parser no longer raises an opaque `TypeError` on an empty `union` or `product`. An empty union now yields the empty experiment and an empty product yields a single empty spec, matching each operator's identity.
 
+### Added
+
+- Allow `for spec in experiment` syntax
+
 ## 0.4.0
 
 ### Added

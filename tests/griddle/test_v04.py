@@ -21,19 +21,16 @@ class TestParse:
     def parse_experiment(x: dict | list) -> list[dict]:
         """Convenience function to avoid writing the schema every time."""
         griddle = {"schema": "v0.4", "experiment": x}
-        return parse(griddle).specs
+        return list(parse(griddle))
 
     def test_minimal(self):
-        griddle = {"schema": "v0.4", "experiment": []}
-        assert parse(griddle).specs == []
+        assert self.parse_experiment([]) == []
 
     def test_almost_minimal(self):
-        griddle = {"schema": "v0.4", "experiment": [{}]}
-        assert parse(griddle).specs == [{}]
+        assert self.parse_experiment([{}]) == [{}]
 
     def test_fixed_only(self):
-        griddle = {"schema": "v0.4", "experiment": [{"R0": 1.5}]}
-        assert parse(griddle).specs == [{"R0": 1.5}]
+        assert self.parse_experiment([{"R0": 1.5}]) == [{"R0": 1.5}]
 
     def test_simple_experiment(self):
         expt = [{"R0": 1.5}, {"R0": 2.5}]

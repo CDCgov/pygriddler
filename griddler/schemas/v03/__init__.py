@@ -107,11 +107,9 @@ def _conditional_product(
         return left * right
     else:
         # filter the left Experiment based on the condition
-        match_left = Experiment(
-            [spec for spec in left.specs if _if_match(spec, condition)]
-        )
+        match_left = Experiment([spec for spec in left if _if_match(spec, condition)])
         unmatch_left = Experiment(
-            [spec for spec in left.specs if not _if_match(spec, condition)]
+            [spec for spec in left if not _if_match(spec, condition)]
         )
 
         return (match_left * right) | unmatch_left
