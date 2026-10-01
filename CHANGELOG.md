@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 
 ### Added
 
-- Allow `for spec in experiment` syntax
+- Allow `for spec in experiment` syntax using explicit `ExperimentProduct` and `ExperimentUnion` objects
 
 ## 0.4.0
 
