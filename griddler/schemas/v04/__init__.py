@@ -35,7 +35,7 @@ def _parse_experiment(x: list[dict[str, Any]] | dict[str, Any]) -> Experiment:
         return Experiment(x)
     elif isinstance(x, dict):
         assert len(x) == 1
-        key, value = list(x.items())[0]
+        key, value = next(iter(x.items()))
         assert isinstance(value, list)
         subexperiments = [_parse_experiment(elt) for elt in value]
         if key == "union":
@@ -49,4 +49,4 @@ def _parse_experiment(x: list[dict[str, Any]] | dict[str, Any]) -> Experiment:
         else:
             raise RuntimeError(f"Unknown experiment key: {key}")
     else:
-        raise RuntimeError(f"Unknown experiment type: {x} of type {type(x)}")
+        raise TypeError(f"Unknown experiment type: {x} of type {type(x)}")

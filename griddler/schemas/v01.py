@@ -18,14 +18,10 @@ def _validate(griddle: dict) -> None:
         raise RuntimeError(f"Griddle has unknown keys: {bad_keys}")
 
     # griddle has at least one of baseline or grid
-    assert any(
-        key in griddle.keys() for key in ["baseline_parameters", "grid_parameters"]
-    )
+    assert any(key in griddle for key in ["baseline_parameters", "grid_parameters"])
 
     # can only have a nest if it has a grid
-    assert (
-        "nested_parameters" not in griddle.keys() or "grid_parameters" in griddle.keys()
-    )
+    assert "nested_parameters" not in griddle or "grid_parameters" in griddle
 
 
 def parse(griddle: dict) -> Experiment:

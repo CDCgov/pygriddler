@@ -1,5 +1,3 @@
-from typing import List
-
 import jsonschema
 import jsonschema.exceptions
 import pytest
@@ -20,7 +18,7 @@ class TestParse:
             assert x in a, f"{x} not in {a}"
 
     @staticmethod
-    def parse_experiment(x: dict | list) -> List[dict]:
+    def parse_experiment(x: dict | list) -> list[dict]:
         """Convenience function to avoid writing the schema every time."""
         griddle = {"schema": "v0.4", "experiment": x}
         return parse(griddle).specs

@@ -1,4 +1,4 @@
-from typing import Iterable
+from collections.abc import Iterable, Iterator
 
 
 class Experiment:
@@ -30,5 +30,5 @@ class Experiment:
 
         return Experiment([x | y for x in self.specs for y in other.specs])
 
-    def __iter__(self) -> Iterable[dict]:
+    def __iter__(self) -> Iterator[dict]:
         return iter(self.specs)

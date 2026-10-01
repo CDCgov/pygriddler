@@ -35,7 +35,7 @@ def _parse_parameters(parameters: dict[str, Any]) -> Experiment:
     independent_keys = list(set(parameters.keys()) - set(dependent_keys))
 
     # start with an experiment with an empty Spec
-    ex = Experiment([dict()])
+    ex = Experiment([{}])
 
     # call everything a bundle at first
     for bundle_name in independent_keys + dependent_keys:
@@ -81,7 +81,7 @@ def _parse_parameters(parameters: dict[str, Any]) -> Experiment:
             # of those parameters are matched within the Spec
             bundle_ex = Experiment(
                 [
-                    {k: bundle_value[k][i] for k in bundle_value.keys()}
+                    {k: bundle_value[k][i] for k in bundle_value}
                     for i in range(bundle_len)
                 ]
             )
@@ -133,7 +133,7 @@ def _if_match(spec: dict[str, Any], condition: dict[str, Any]) -> bool:
         "Only one key is allowed in 'equals' condition"
     )
 
-    if_name = list(condition["equals"].keys())[0]
+    if_name = next(iter(condition["equals"].keys()))
     if_value = condition["equals"][if_name]
 
     return if_name in spec and spec[if_name] == if_value
