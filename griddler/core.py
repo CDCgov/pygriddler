@@ -1,3 +1,5 @@
+import functools
+import itertools
 from collections.abc import Iterable, Iterator
 
 
@@ -19,7 +21,7 @@ class Experiment:
     def union(self, other: "Experiment") -> "Experiment":
         """ "Add" two experiments"""
         assert isinstance(other, Experiment)
-        return Experiment(self.specs + other.specs)
+        return ExperimentUnion([self, other])
 
     def __or__(self, other: "Experiment") -> "Experiment":
         return self.union(other)
@@ -27,8 +29,25 @@ class Experiment:
     def __mul__(self, other: "Experiment") -> "Experiment":
         """ "Multiply" two experiments"""
         assert isinstance(other, Experiment)
-
-        return Experiment([x | y for x in self for y in other])
+        return ExperimentProduct([self, other])
 
     def __iter__(self) -> Iterator[dict]:
         yield from self.specs
+
+
+class ExperimentUnion(Experiment):
+    def __init__(self, experiments: Iterable[Experiment]):
+        self.experiments = list(experiments)
+
+    def __iter__(self) -> Iterator[dict]:
+        for exp in self.experiments:
+            yield from exp
+
+
+class ExperimentProduct(Experiment):
+    def __init__(self, experiments: Iterable[Experiment]):
+        self.experiments = list(experiments)
+
+    def __iter__(self) -> Iterator[dict]:
+        for combination in itertools.product(*self.experiments):
+            yield functools.reduce(lambda acc, x: acc | x, combination)
