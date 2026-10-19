@@ -16,7 +16,7 @@ jobs:
         with:
           version: "0.5.20"
       - name: Set up python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version-file: "pyproject.toml"
       - name: Install the project
