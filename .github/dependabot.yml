@@ -1,15 +1,22 @@
-# Set update schedule for GitHub Actions
-
 version: 2
-updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "monthly"
-  - package-ecosystem: "pre-commit"
-    directory: "/"
+
+multi-ecosystem-groups:
+  infrastructure:
     schedule:
       interval: "monthly"
     commit-message:
       prefix: "chore"
       include: "scope"
+
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    patterns:
+      - "*"
+    multi-ecosystem-group: "infrastructure"
+
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    patterns:
+      - "*"
+    multi-ecosystem-group: "infrastructure"
