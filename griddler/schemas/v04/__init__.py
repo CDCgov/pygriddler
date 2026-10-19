@@ -1,11 +1,10 @@
-import functools
 import importlib.resources
 import json
 from typing import Any
 
 import jsonschema
 
-from griddler.core import Experiment
+from griddler.core import Experiment, ExperimentProduct, ExperimentUnion
 
 
 def load_schema() -> dict:
@@ -39,13 +38,9 @@ def _parse_experiment(x: list[dict[str, Any]] | dict[str, Any]) -> Experiment:
         assert isinstance(value, list)
         subexperiments = [_parse_experiment(elt) for elt in value]
         if key == "union":
-            # empty union is the empty experiment (identity for union)
-            return functools.reduce(lambda x, y: x | y, subexperiments, Experiment([]))
+            return ExperimentUnion(subexperiments)
         elif key == "product":
-            # empty product is a single empty spec (identity for product)
-            return functools.reduce(
-                lambda x, y: x * y, subexperiments, Experiment([{}])
-            )
+            return ExperimentProduct(subexperiments)
         else:
             raise RuntimeError(f"Unknown experiment key: {key}")
     else:
