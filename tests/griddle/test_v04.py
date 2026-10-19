@@ -9,7 +9,8 @@ from griddler.schemas.v04 import load_schema
 class TestParse:
     @staticmethod
     def assert_list_setequal(a, b):
-        """Assert that two lists have the same items, potentially in different order."""
+        """Assert that two lists have the same items, potentially in different
+        order."""
         assert len(a) == len(b)
         for x in a:
             assert x in b, f"{x} not in {b}"
@@ -105,12 +106,12 @@ class TestSchema:
 
     @classmethod
     def validate_griddle(cls, x: dict) -> None:
-        """Validate an entire griddle"""
+        """Validate an entire griddle."""
         jsonschema.Draft202012Validator(cls.schema).validate(x)
 
     @classmethod
     def validate_experiment(cls, x: dict | list) -> None:
-        """Validate the experiment inside a griddle"""
+        """Validate the experiment inside a griddle."""
         cls.validate_griddle({"schema": "my_schema", "experiment": x})
 
     def test_v0_2_griddle_fails(self):
@@ -118,29 +119,29 @@ class TestSchema:
             self.validate_griddle({"experiment": [{"R0": 1.0}]})
 
     def test_griddle_minimal(self):
-        """Minimal griddle"""
+        """Minimal griddle."""
         self.validate_griddle({"schema": "my_schema", "experiment": []})
 
     def test_griddle_one_spec(self):
-        """Griddle with one fixed parameter"""
+        """Griddle with one fixed parameter."""
         self.validate_griddle({"schema": "my_schema", "experiment": [{"R0": 1.5}]})
 
     def test_experiment_two_spec(self):
-        """Experiment with two specs"""
+        """Experiment with two specs."""
         self.validate_experiment([{"R0": 1.5}, {"R0": 2.5}])
 
     def test_experiment_union(self):
-        """Experiment with union of two specs"""
+        """Experiment with union of two specs."""
         self.validate_experiment({"union": [[{"R0": 1.5}], [{"gamma": 1.0}]]})
 
     def test_experiment_product(self):
-        """Experiment with product of two specs"""
+        """Experiment with product of two specs."""
         self.validate_experiment(
             {"product": [[{"R0": 1.5}, {"R0": 2.5}], [{"gamma": 1.0}, {"gamma": 2.0}]]}
         )
 
     def test_experiment_product_union(self):
-        """Experiment that is a product of a union of two experiments"""
+        """Experiment that is a product of a union of two experiments."""
         self.validate_experiment(
             {
                 "product": [

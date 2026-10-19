@@ -13,20 +13,23 @@ def text_to_dicts(text: str) -> list[dict[str, Any]]:
 
 
 def test_simple():
-    assert text_to_dicts("""
+    text = """
     schema: v0.3
     parameters:
       R0: {fix: 1.0}
-    """) == [{"R0": 1.0}]
+    """
+
+    assert text_to_dicts(text) == [{"R0": 1.0}]
 
 
 def test_vary():
-    actual = text_to_dicts("""
+    text = """
     schema: v0.3
     parameters:
       R0: {vary: [1.5, 2.0]}
       gamma: {vary: [0.3, 0.4]}
-    """)
+    """
+    actual = text_to_dicts(text)
 
     expected = [
         {"R0": 1.5, "gamma": 0.3},
@@ -41,17 +44,21 @@ def test_vary():
 
 
 def test_bundle():
-    assert text_to_dicts("""
+    text = """
     schema: v0.3
     parameters:
       scenario:
         R0: [low, high]
         gamma: [low, high]
-    """) == [{"R0": "low", "gamma": "low"}, {"R0": "high", "gamma": "high"}]
+    """
+    assert text_to_dicts(text) == [
+        {"R0": "low", "gamma": "low"},
+        {"R0": "high", "gamma": "high"},
+    ]
 
 
 def test_conditional():
-    assert text_to_dicts("""
+    text = """
     schema: v0.3
     parameters:
       method: {vary: [newton, brent]}
@@ -61,7 +68,8 @@ def test_conditional():
       bounds:
         if: {equals: {method: brent}}
         fix: [0.0, 1.0]
-    """) == [
+    """
+    assert text_to_dicts(text) == [
         {"method": "brent", "bounds": [0.0, 1.0]},
         {"method": "newton", "start_point": 0.25},
         {"method": "newton", "start_point": 0.50},
@@ -70,34 +78,38 @@ def test_conditional():
 
 
 def test_comment():
-    assert text_to_dicts("""
+    text = """
     schema: v0.3
     parameters:
       R0: {fix: 1.0, comment: "This is a comment"}
-    """) == [{"R0": 1.0}]
+    """
+    assert text_to_dicts(text) == [{"R0": 1.0}]
 
 
 def test_reserved_words():
     # Test that reserved words in the bundle are not allowed
-    with pytest.raises(RuntimeError, match="vary"):
-        text_to_dicts("""
+    text = """
         schema: v0.3
         parameters:
           R0: {fix: 1.0, vary: ["bar"]}
-        """)
+        """
+    with pytest.raises(RuntimeError, match="vary"):
+        text_to_dicts(text)
 
-    with pytest.raises(RuntimeError, match="my_bad_key"):
-        text_to_dicts("""
+    text = """
         schema: v0.3
         parameters:
           R0: {vary: [1.0], my_bad_key: ["bar"]}
-        """)
+        """
+    with pytest.raises(RuntimeError, match="my_bad_key"):
+        text_to_dicts(text)
 
+    text = """
+    schema: v0.3
+    parameters:
+      scenario:
+        R0: [1.0, 1.5]
+        comment: []
+    """
     with pytest.raises(RuntimeError, match="comment"):
-        text_to_dicts("""
-        schema: v0.3
-        parameters:
-          scenario:
-            R0: [1.0, 1.5]
-            comment: []
-        """)
+        text_to_dicts(text)
