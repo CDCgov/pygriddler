@@ -30,7 +30,7 @@ jobs:
       # ensure that all groups, including optional ones, are synced
       - run: uv sync --locked --all-extras --all-groups
       - run: uv run zensical build --strict
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         with:
           name: github-pages
           path: site
