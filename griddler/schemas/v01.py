@@ -5,7 +5,7 @@ from griddler.core import Experiment
 
 
 def _validate(griddle: dict) -> None:
-    """Validate that a griddle is well-formed"""
+    """Validate that a griddle is well-formed."""
     # griddle is a dict
     assert isinstance(griddle, dict)
     # griddle has only the known keys
@@ -60,8 +60,7 @@ def parse(griddle: dict) -> Experiment:
 
 
 def _get_match(param_set: dict, nests: Iterable[dict]) -> int | None:
-    """
-    Which nest(s) does this parameter set (i.e., Spec) match to?
+    """Which nest(s) does this parameter set (i.e., Spec) match to?
 
     Returns: Index of the matching nest, or None if no match.
     """
@@ -77,9 +76,7 @@ def _get_match(param_set: dict, nests: Iterable[dict]) -> int | None:
 
 
 def _is_match(x: dict, y: dict) -> bool:
-    """
-    Do these two parameter sets "match," i.e., do they have at least one parameter
-    name-value pair in common?
-    """
+    """Do these two parameter sets "match," i.e., do they have at least one
+    parameter name-value pair in common?"""
     common_keys = x.keys() & y.keys()
     return any(x[key] == y[key] for key in common_keys) if common_keys else False
